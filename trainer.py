@@ -33,13 +33,13 @@ class Trainer:
         self.model = Unet()
         self.model.to(self.device)
         self.criterion = BCEDiceLoss().to(self.device)
-        self.dice_coefficient = DiceLoss()._dice_coefficient.to(self.device)
+        self.dice_coefficient = DiceLoss()._dice_coefficient
         self.optimizer = optim.SGD(self.model.parameters(), lr=config.learning_rate, momentum=config.momentum)
-        self.scheduler = optim.lr_scheduler.ReduceLROnPlateau(self.optimizer, factor=0.85, patience=2)
+        self.scheduler = optim.lr_scheduler.ReduceLROnPlateau(self.optimizer,'min', factor=0.1, patience=2)
         if config.load_weights:
             checkpoint_path = config.model_weights_path.joinpath("best.pth")
             if os.path.exists(checkpoint_path):
-                checkpoint = torch.load(checkpoint_path, map_location=torch.device('cpu'))
+                checkpoint = torch.load(checkpoint_path)
                 self.model.load_state_dict(checkpoint['model_state_dict'])
                 self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
                 print("Best weights and optimizer parameters are loaded")
@@ -71,11 +71,12 @@ class Trainer:
         print("----Training started----")
 
 
-    def train(self):
+    def train_fn(self):
         logging.basicConfig(filename='training.log', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
         # total_batches = math.floor(self.train_set.__len__() / config.batch_size)
         best_loss = float("inf")
         for epoch in range(config.epochs):
+            # print(self.scheduler._last_lr)
             self.model.train()
             # correct_predictions = 0
             # total_samples = 0
@@ -96,9 +97,7 @@ class Trainer:
                 # correct_predictions += (predicted_labels == label).sum().item()
                 # total_samples += label.size(0)
             self.training_loss.append(sum(losses) / len(losses))
-            self.scheduler.step()
-            print(self.scheduler.get_last_lr())
-            self.scheduler_loss.append(self.scheduler.get_last_lr)
+
             # self.training_accuracy.append(correct_predictions / total_samples)
 
             ################### Validation
@@ -121,6 +120,9 @@ class Trainer:
                     # total_samples += label.size(0)
 
             self.validation_loss.append(sum(losses) / len(losses))
+            self.scheduler.step(sum(losses) / len(losses))
+            print(self.scheduler._last_lr)
+            self.scheduler_loss.append(self.scheduler._last_lr)
             # self.validation_accuracy.append(correct_predictions / total_samples)
 
             logging.info(f'Epoch: {epoch}, Training Loss: {self.training_loss[-1]}, Validation Loss: {self.validation_loss[-1]}')
@@ -138,7 +140,7 @@ class Trainer:
                         }, config.model_weights_path.joinpath("best.pth"))
                 print("---Best weights and optimizer parameters are saved---")
 
-    def test(self):
+    def test_fn(self):
         losses = []
         # correct_predictions = 0
         # total_samples = 0
