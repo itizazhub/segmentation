@@ -35,7 +35,7 @@ class Trainer:
         self.criterion = BCEDiceLoss().to(self.device)
         self.dice_coefficient = DiceLoss()._dice_coefficient
         self.optimizer = optim.SGD(self.model.parameters(), lr=config.learning_rate, momentum=config.momentum)
-        self.scheduler = optim.lr_scheduler.ReduceLROnPlateau(self.optimizer,'min', factor=0.1, patience=2)
+        self.scheduler = optim.lr_scheduler.ReduceLROnPlateau(self.optimizer,'min', factor=0.80, patience=2)
         if config.load_weights:
             checkpoint_path = config.model_weights_path.joinpath("best.pth")
             if os.path.exists(checkpoint_path):
@@ -96,6 +96,9 @@ class Trainer:
                 # _, predicted_labels = torch.max(pred, 1)
                 # correct_predictions += (predicted_labels == label).sum().item()
                 # total_samples += label.size(0)
+            self.scheduler.step(sum(losses) / len(losses))
+            print(self.scheduler._last_lr[0])
+            self.scheduler_loss.append(self.scheduler._last_lr[0])
             self.training_loss.append(sum(losses) / len(losses))
 
             # self.training_accuracy.append(correct_predictions / total_samples)
@@ -120,9 +123,6 @@ class Trainer:
                     # total_samples += label.size(0)
 
             self.validation_loss.append(sum(losses) / len(losses))
-            self.scheduler.step(sum(losses) / len(losses))
-            print(self.scheduler._last_lr)
-            self.scheduler_loss.append(self.scheduler._last_lr)
             # self.validation_accuracy.append(correct_predictions / total_samples)
 
             logging.info(f'Epoch: {epoch}, Training Loss: {self.training_loss[-1]}, Validation Loss: {self.validation_loss[-1]}')
