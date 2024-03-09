@@ -2,19 +2,20 @@ from pathlib import Path
 
 class Config:
     def __init__(self) -> None:
-        self.zipped_dataset_path = Path("5")
-        self.unzipped_dataset = Path("unzipped_dataset")
-        self.mat_files_path = Path("mat_files")
-        self.images_path = Path('images')
-        self.masks_path = Path('masks')
+        self.zipped_dataset_path = Path("../5")
+        self.unzipped_dataset = Path("/content/drive/MyDrive/segmentation_project/unzipped_dataset")
+        self.mat_files_path = Path("/content/drive/MyDrive/segmentation_project/mat_files")
+        self.images_path = Path('/content/drive/MyDrive/segmentation_project/images')
+        self.masks_path = Path('/content/drive/MyDrive/segmentation_project/masks')
         self.pre_trained_model_path = Path('pre_trained_weights')
-        self.model_weights_path = Path('model_weights')
-        self.result_folder_path = Path('results')
+        self.model_weights_path = Path('/content/drive/MyDrive/segmentation_project/model_weights')
+        self.training_weights_path = Path('/content/drive/MyDrive/segmentation_project/all_weights')
+        self.result_folder_path = Path('/content/drive/MyDrive/segmentation_project/results')
         self.inference_images_path = Path('inference_images')
-        self.inference_out_images_path = Path('inference_out_images')
-        self.inference_out_masks_path = Path('inference_out_masks')
-        self.combined_image_mask = Path('combined_image_mask')
-
+        self.inference_out_images_path = Path('/content/drive/MyDrive/segmentation_project/inference_out_images')
+        self.inference_out_masks_path = Path('/content/drive/MyDrive/segmentation_project/inference_out_masks')
+        self.combined_image_mask = Path('/content/drive/MyDrive/segmentation_project/combined_image_mask')
+        self.log_file_path = Path('/content/drive/MyDrive/segmentation_project/training.log')
         self.train_ratio = 0.9
         # self.val_ratio = 0.2
         self.test_ratio = 0.1

@@ -34,7 +34,7 @@ class Trainer:
         self.model.to(self.device)
         self.criterion = BCEDiceLoss().to(self.device)
         self.dice_coefficient = DiceLoss()._dice_coefficient
-        self.optimizer = optim.SGD(self.model.parameters(), lr=config.learning_rate, momentum=config.momentum)
+        self.optimizer = optim.Adam(self.model.parameters(), lr=config.learning_rate)
         self.scheduler = optim.lr_scheduler.ReduceLROnPlateau(self.optimizer,'min', factor=0.80, patience=2)
         if config.load_weights:
             checkpoint_path = config.model_weights_path.joinpath("best.pth")
@@ -72,9 +72,10 @@ class Trainer:
 
 
     def train_fn(self):
-        logging.basicConfig(filename='training.log', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+        logging.basicConfig(filename=config.log_file_path, level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
         # total_batches = math.floor(self.train_set.__len__() / config.batch_size)
         best_loss = float("inf")
+        all_loss = float("inf")
         for epoch in range(config.epochs):
             # print(self.scheduler._last_lr)
             self.model.train()
@@ -130,8 +131,6 @@ class Trainer:
             self.save_results_to_csv()
             # Save the model if the validation loss improves
             if (self.training_loss[-1] < best_loss) and (self.validation_loss[-1] < best_loss):
-                if not os.path.exists(config.model_weights_path):
-                    os.mkdir(config.model_weights_path)
                 print("Saving model...")
                 best_loss = self.validation_loss[-1]
                 torch.save({
@@ -139,6 +138,14 @@ class Trainer:
                             'optimizer_state_dict': self.optimizer.state_dict(),
                         }, config.model_weights_path.joinpath("best.pth"))
                 print("---Best weights and optimizer parameters are saved---")
+            #save training weights
+            if (self.training_loss[-1] < all_loss):
+                all_loss = self.training_loss[-1]
+                torch.save({
+                            'model_state_dict': self.model.state_dict(),
+                            'optimizer_state_dict': self.optimizer.state_dict(),
+                        }, config.training_weights_path.joinpath(f"best.pth"))
+
 
     def test_fn(self):
         losses = []
