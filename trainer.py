@@ -73,16 +73,13 @@ class Trainer:
 
     def train_fn(self):
         logging.basicConfig(filename=config.log_file_path, level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-        # total_batches = math.floor(self.train_set.__len__() / config.batch_size)
         best_loss = float("inf")
         all_loss = float("inf")
         for epoch in range(config.epochs):
-            # print(self.scheduler._last_lr)
             self.model.train()
             # correct_predictions = 0
             # total_samples = 0
             losses = []
-            # i = 0
             for img, label in iter(self.train_loader):
                 self.optimizer.zero_grad()
                 img, label = torch.tensor(img), torch.tensor(label)
@@ -98,13 +95,12 @@ class Trainer:
                 # correct_predictions += (predicted_labels == label).sum().item()
                 # total_samples += label.size(0)
             self.scheduler.step(sum(losses) / len(losses))
-            print(self.scheduler._last_lr[0])
             self.scheduler_loss.append(self.scheduler._last_lr[0])
             self.training_loss.append(sum(losses) / len(losses))
 
             # self.training_accuracy.append(correct_predictions / total_samples)
 
-            ################### Validation
+            ################### Validation###################
             losses = []
             # correct_predictions = 0
             # total_samples = 0
@@ -126,18 +122,17 @@ class Trainer:
             self.validation_loss.append(sum(losses) / len(losses))
             # self.validation_accuracy.append(correct_predictions / total_samples)
 
-            logging.info(f'Epoch: {epoch}, Training Loss: {self.training_loss[-1]}, Validation Loss: {self.validation_loss[-1]}')
-            print(f'Epoch: {epoch}, Training Loss: {self.training_loss[-1]}, Validation Loss: {self.validation_loss[-1]}')
+            logging.info(f'Epoch: {epoch}, Training Loss: {self.training_loss[-1]}, Validation Loss: {self.validation_loss[-1]}, Learning rate: {self.scheduler_loss[-1]}')
+            print(f'Epoch: {epoch}, Training Loss: {self.training_loss[-1]}, Validation Loss: {self.validation_loss[-1]}, Learning rate: {self.scheduler_loss[-1]}')
             self.save_results_to_csv()
             # Save the model if the validation loss improves
             if (self.training_loss[-1] < best_loss) and (self.validation_loss[-1] < best_loss):
-                print("Saving model...")
                 best_loss = self.validation_loss[-1]
                 torch.save({
                             'model_state_dict': self.model.state_dict(),
                             'optimizer_state_dict': self.optimizer.state_dict(),
                         }, config.model_weights_path.joinpath("best.pth"))
-                print("---Best weights and optimizer parameters are saved---")
+                print("------Best val weights and optimizer parameters are saved------")
             #save training weights
             if (self.training_loss[-1] < all_loss):
                 all_loss = self.training_loss[-1]
@@ -145,6 +140,7 @@ class Trainer:
                             'model_state_dict': self.model.state_dict(),
                             'optimizer_state_dict': self.optimizer.state_dict(),
                         }, config.training_weights_path.joinpath(f"best.pth"))
+                print("---Best training weights and optimizer parameters are saved----")
 
 
     def test_fn(self):
