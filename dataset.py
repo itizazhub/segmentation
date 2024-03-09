@@ -31,7 +31,7 @@ class TumorDataset(Dataset):
             transforms.Grayscale(),
             transforms.Resize((config.image_size, config.image_size))
         ])
-        # self.DEBUG = DEBUG
+        self.DEBUG = DEBUG
         if not config.transform:
             self.transform = None
 

@@ -48,7 +48,7 @@ class Trainer:
                 if os.path.exists(config.pre_trained_model_path):
                     checkpoint_path = config.pre_trained_model_path.joinpath('weights.pt')
                     checkpoint = torch.load(checkpoint_path) #, map_location=torch.device('cpu')
-                    self.model.load_state_dict(checkpoint)
+                    self.model.load_state_dict(checkpoint, strict=False)
                     print("Pre-trained weights are loaded")
         else:
             print("Starting from scratch")
@@ -123,7 +123,7 @@ class Trainer:
             # self.validation_accuracy.append(correct_predictions / total_samples)
 
             logging.info(f'Epoch: {epoch}, Training Loss: {self.training_loss[-1]}, Validation Loss: {self.validation_loss[-1]}, Learning rate: {self.scheduler_loss[-1]}')
-            print(f'Epoch: {epoch}, Training Loss: {self.training_loss[-1]:.4f}, Validation Loss: {self.validation_loss[-1]:.4f}, Learning rate: {self.scheduler_loss[-1]:.4f}')
+            print(f'Epoch: {epoch}, Training Loss: {self.training_loss[-1]:.4f}, Validation Loss: {self.validation_loss[-1]:.4f}, Learning rate: {self.scheduler_loss[-1]}')
             self.save_results_to_csv()
             # Save the model if the validation loss improves
             if (self.training_loss[-1] < best_loss) and (self.validation_loss[-1] < best_loss):

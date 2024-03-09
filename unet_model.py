@@ -66,9 +66,9 @@ class Unet(nn.Module):
         
         # Bottleneck Part of Network.
         self.conv5_1 = nn.Conv2d(self.filters[3], self.filters[4], kernel_size=ks, padding=padding)
-        self.bn6_1 = nn.BatchNorm2d(self.filters[3])
+        self.bn5_1 = nn.BatchNorm2d(self.filters[4])
         self.conv5_2 = nn.Conv2d(self.filters[4], self.filters[4], kernel_size=ks, padding=padding)
-        self.bn6_2 = nn.BatchNorm2d(self.filters[3])
+        self.bn5_2 = nn.BatchNorm2d(self.filters[4])
         self.conv5_t = nn.ConvTranspose2d(self.filters[4], self.filters[3], 2, stride=2)
 
         # Decoding Part of Network.
