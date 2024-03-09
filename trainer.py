@@ -34,8 +34,8 @@ class Trainer:
         self.model.to(self.device)
         self.criterion = BCEDiceLoss().to(self.device)
         self.dice_coefficient = DiceLoss()._dice_coefficient
-        self.optimizer = optim.Adam(self.model.parameters(), lr=config.learning_rate)
-        self.scheduler = optim.lr_scheduler.ReduceLROnPlateau(self.optimizer,'min', factor=0.80, patience=2)
+        self.optimizer = optim.SGD(self.model.parameters(), lr=config.learning_rate, momentum=config.momentum, weight_decay=config.weight_decay)
+        self.scheduler = optim.lr_scheduler.ReduceLROnPlateau(self.optimizer,'min', factor=0.1, patience=3)
         if config.load_weights:
             checkpoint_path = config.model_weights_path.joinpath("best.pth")
             if os.path.exists(checkpoint_path):

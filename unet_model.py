@@ -18,16 +18,14 @@ class Unet(nn.Module):
     Output Size of Network - (1,512,512)
         Shape Format :  (Channel, Width, Height)
     """
-
-    def __init__(self, input_channels=1, output_channels=1):
+    def __init__(self, input_channels=1, output_channels=1, dropout_prob=config.dropout):
+        super(Unet, self).__init__()
         """ Constructor for UNet class.
         Parameters:
             filters(list): Five filter values for the network.
             input_channels(int): Input channels for the network. Default: 1
             output_channels(int): Output channels for the final network. Default: 1
         """
-        super(Unet, self).__init__()
-
         self.filters = config.filters
 
         if len(self.filters) != 5:
@@ -35,23 +33,29 @@ class Unet(nn.Module):
 
         padding = 1
         ks = 3
+        self.dropout_prob = dropout_prob
+
         # Encoding Part of Network.
         #   Block 1
         self.conv1_1 = nn.Conv2d(input_channels, self.filters[0], kernel_size=ks, padding=padding)
         self.conv1_2 = nn.Conv2d(self.filters[0], self.filters[0], kernel_size=ks, padding=padding)
         self.maxpool1 = nn.MaxPool2d(2)
+        self.dropout1 = nn.Dropout2d(p=dropout_prob)
         #   Block 2
         self.conv2_1 = nn.Conv2d(self.filters[0], self.filters[1], kernel_size=ks, padding=padding)
         self.conv2_2 = nn.Conv2d(self.filters[1], self.filters[1], kernel_size=ks, padding=padding)
         self.maxpool2 = nn.MaxPool2d(2)
+        self.dropout2 = nn.Dropout2d(p=dropout_prob)
         #   Block 3
         self.conv3_1 = nn.Conv2d(self.filters[1], self.filters[2], kernel_size=ks, padding=padding)
         self.conv3_2 = nn.Conv2d(self.filters[2], self.filters[2], kernel_size=ks, padding=padding)
         self.maxpool3 = nn.MaxPool2d(2)
+        self.dropout3 = nn.Dropout2d(p=dropout_prob)
         #   Block 4
         self.conv4_1 = nn.Conv2d(self.filters[2], self.filters[3], kernel_size=ks, padding=padding)
         self.conv4_2 = nn.Conv2d(self.filters[3], self.filters[3], kernel_size=ks, padding=padding)
         self.maxpool4 = nn.MaxPool2d(2)
+        self.dropout4 = nn.Dropout2d(p=dropout_prob)
         
         # Bottleneck Part of Network.
         self.conv5_1 = nn.Conv2d(self.filters[3], self.filters[4], kernel_size=ks, padding=padding)
@@ -79,32 +83,27 @@ class Unet(nn.Module):
         self.conv10 = nn.Conv2d(self.filters[0], output_channels, kernel_size=ks, padding=padding)
 
     def forward(self, x):
-        """ Method for forward propagation in the network.
-        Parameters:
-            x(torch.Tensor): Input for the network of size (1, 512, 512).
-
-        Returns:
-            output(torch.Tensor): Output after the forward propagation 
-                                    of network on the input.
-        """
-
         # Encoding Part of Network.
         #   Block 1
         conv1 = F.relu(self.conv1_1(x))
         conv1 = F.relu(self.conv1_2(conv1))
         pool1 = self.maxpool1(conv1)
+        pool1 = self.dropout1(pool1)
         #   Block 2
         conv2 = F.relu(self.conv2_1(pool1))
         conv2 = F.relu(self.conv2_2(conv2))
         pool2 = self.maxpool2(conv2)
+        pool2 = self.dropout2(pool2)
         #   Block 3
         conv3 = F.relu(self.conv3_1(pool2))
         conv3 = F.relu(self.conv3_2(conv3))
         pool3 = self.maxpool3(conv3)
+        pool3 = self.dropout3(pool3)
         #   Block 4
         conv4 = F.relu(self.conv4_1(pool3))
         conv4 = F.relu(self.conv4_2(conv4))
         pool4 = self.maxpool4(conv4)
+        pool4 = self.dropout4(pool4)
 
         # Bottleneck Part of Network.
         conv5 = F.relu(self.conv5_1(pool4))
@@ -129,9 +128,10 @@ class Unet(nn.Module):
         conv9 = F.relu(self.conv9_2(conv9))
 
         # Output Part of Network.
-        output = F.sigmoid(self.conv10(conv9))
+        output = torch.sigmoid(self.conv10(conv9))
 
         return output
+
 
     # def summary(self, input_size=(1, 512, 512), batch_size=-1, device='cuda'):
     #     """ Get the summary of the network in a chart like form
