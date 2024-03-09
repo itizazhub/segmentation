@@ -12,7 +12,7 @@ class TumorDataset(Dataset):
     TumorDataset inherits from torch.utils.data.Dataset class.
     """
 
-    def __init__(self, dataset_tuple:tuple, transform=True, DEBUG=False):
+    def __init__(self, dataset_tuple:tuple):
         """ Constructor for our TumorDataset class.
         Parameters:
             root_dir(str): Directory with all the images.
@@ -31,7 +31,7 @@ class TumorDataset(Dataset):
             transforms.Grayscale(),
             transforms.Resize((config.image_size, config.image_size))
         ])
-        self.DEBUG = DEBUG
+        self.DEBUG = config.DEBUG
         if not config.transform:
             self.transform = None
 

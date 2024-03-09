@@ -132,7 +132,7 @@ class Trainer:
                             'model_state_dict': self.model.state_dict(),
                             'optimizer_state_dict': self.optimizer.state_dict(),
                         }, config.model_weights_path.joinpath("best.pth"))
-                print("------Best val weights and optimizer parameters are saved------")
+                print("---Best val weights and optimizer parameters are saved---------")
             #save training weights
             if (self.training_loss[-1] < all_loss):
                 all_loss = self.training_loss[-1]

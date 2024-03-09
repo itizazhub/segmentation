@@ -23,6 +23,7 @@ class Config:
         self.random_state = 42
         self.image_size = 512
         self.transform = True
+        self.DEBUG = False
         self.batch_size = 6
 
         self.filters = [16,32,64,128,256]
