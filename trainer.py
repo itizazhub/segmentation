@@ -123,7 +123,7 @@ class Trainer:
             # self.validation_accuracy.append(correct_predictions / total_samples)
 
             logging.info(f'Epoch: {epoch}, Training Loss: {self.training_loss[-1]}, Validation Loss: {self.validation_loss[-1]}, Learning rate: {self.scheduler_loss[-1]}')
-            print(f'Epoch: {epoch}, Training Loss: {self.training_loss[-1]}, Validation Loss: {self.validation_loss[-1]}, Learning rate: {self.scheduler_loss[-1]}')
+            print(f'Epoch: {epoch}, Training Loss: {self.training_loss[-1]:.4f}, Validation Loss: {self.validation_loss[-1]:.4f}, Learning rate: {self.scheduler_loss[-1]:.4f}')
             self.save_results_to_csv()
             # Save the model if the validation loss improves
             if (self.training_loss[-1] < best_loss) and (self.validation_loss[-1] < best_loss):
