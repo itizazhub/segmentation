@@ -4,8 +4,7 @@ from PIL import Image
 import matplotlib.pyplot as plt
 import torchvision.transforms as transforms
 import torchvision.transforms.functional as TF
-from unet_model import Unet
-from loss import DiceLoss
+from unet_model import UNet
 from pathlib import Path
 from config import config
 import os
@@ -43,7 +42,6 @@ def inference(threshold=0.5):
     if not os.path.isdir(config.inference_images_path):
         return f"No {config.inference_images_path} is Found"
 
-    diceloss = DiceLoss()._dice_coefficient
     transformation = transforms.Compose([
             transforms.Grayscale(),
             transforms.Resize((config.image_size, config.image_size))
@@ -51,7 +49,7 @@ def inference(threshold=0.5):
 
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
-    model = Unet()
+    model = UNet()
     model.to(device)
     checkpoint_path = config.model_weights_path.joinpath("best.pth")
     if os.path.exists(checkpoint_path):
