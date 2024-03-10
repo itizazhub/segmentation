@@ -36,7 +36,7 @@ class Trainer:
         self.dice_coefficient = DiceLoss()._dice_coefficient
         self.optimizer = optim.RMSprop(self.model.parameters(),
                                 lr=config.learning_rate, weight_decay=config.weight_decay, momentum=config.momentum, foreach=True)
-        self.scheduler = optim.lr_scheduler.ReduceLROnPlateau(self.optimizer,'min', factor=0.8, patience=2)
+        self.scheduler = optim.lr_scheduler.ReduceLROnPlateau(self.optimizer,'max', factor=config.factor, patience=config.patience)
         if config.load_weights:
             checkpoint_path = config.model_weights_path.joinpath("best.pth")
             if os.path.exists(checkpoint_path):
@@ -74,7 +74,7 @@ class Trainer:
 
     def train_fn(self):
         logging.basicConfig(filename=config.log_file_path, level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-        best_loss = float("inf")
+        best_loss = float(-1)
         all_loss = float("inf")
         for epoch in range(config.epochs):
             self.model.train()
@@ -129,7 +129,7 @@ class Trainer:
             print(f'Epoch: {epoch}, Training Loss: {self.training_loss[-1]:.4f}, Validation Loss: {self.validation_loss[-1]:.4f}, Learning rate: {self.scheduler_loss[-1]}')
             self.save_results_to_csv()
             # Save the model if the validation loss improves
-            if (self.training_loss[-1] < best_loss) and (self.validation_loss[-1] < best_loss):
+            if (self.validation_loss[-1] > best_loss):
                 best_loss = self.validation_loss[-1]
                 torch.save({
                             'model_state_dict': self.model.state_dict(),
