@@ -182,3 +182,5 @@ class Trainer:
         df.to_csv(config.result_folder_path.joinpath("results.csv"), index=False)
         # df_classes = pd.DataFrame(self.classes)
         # df_classes.to_csv(Path(config.result_folder_path).joinpath("classes.csv"), index=False)
+
+
