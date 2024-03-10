@@ -1,76 +1,37 @@
 import torch
-import torch.nn as nn
-import torch.nn.functional as F
+from torch import Tensor
 
 
-class DiceLoss(nn.Module):
-    """Sørensen–Dice coefficient loss to calculate
-    the mean loss over a batch of data.This loss mainly
-    calculates the similarity between two samples.
-    To know more about this loss check this link:
-    https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient
-    """
+def dice_coeff(input: Tensor, target: Tensor, reduce_batch_first: bool = False, epsilon: float = 1e-6):
+    # Average of Dice coefficient for all batches, or for a single mask
+    assert input.size() == target.size()
+    assert input.dim() == 3 or not reduce_batch_first
 
-    def __init__(self):
-        """Simple constructor for the class."""
-        super(DiceLoss, self).__init__()
+    sum_dim = (-1, -2) if input.dim() == 2 or not reduce_batch_first else (-1, -2, -3)
 
-    def forward(self, predicted, target):
-        """ Method for calculation of loss from sample.
-        Parameters:
-            predicted(torch.Tensor): Predicted output of the network.
-                                    Shape - (Batch Size,Channel,Height,Width)
-            target(torch.Tensor): Actual required output for the network
-                                    Shape - (Batch Size,Channel,Height,Width)
+    inter = 2 * (input * target).sum(dim=sum_dim)
+    sets_sum = input.sum(dim=sum_dim) + target.sum(dim=sum_dim)
+    sets_sum = torch.where(sets_sum == 0, inter, sets_sum)
 
-        Returns:
-            The mean dice Loss over the batch size.
-        """
-        batch = predicted.size()[0]
-        batch_loss = 0
-        for index in range(batch):
-            coefficient = self._dice_coefficient(
-                predicted[index], target[index])
-            batch_loss += coefficient
-
-        batch_loss = batch_loss / batch
-
-        return 1 - batch_loss
-
-    def _dice_coefficient(self, predicted, target):
-        """Calculates the Sørensen–Dice Coefficient for a
-        single sample.
-        Parameters:
-            predicted(torch.Tensor): Predicted single output of the network.
-                                    Shape - (Channel,Height,Width)
-            target(torch.Tensor): Actual required single output for the network
-                                    Shape - (Channel,Height,Width)
-
-        Returns:
-            coefficient(torch.Tensor): Dice coefficient for the input sample.
-                                        1 represents high similarity and
-                                        0 represents low similarity.
-        """
-        smooth = 1
-        product = torch.mul(predicted, target)
-        intersection = product.sum()
-        coefficient = (2*intersection + smooth) / \
-            (predicted.sum() + target.sum() + smooth)
-        return coefficient
+    dice = (inter + epsilon) / (sets_sum + epsilon)
+    return dice.mean()
 
 
-class BCEDiceLoss(nn.Module):
-    """ Combination of Binary Cross Entropy Loss and Soft Dice Loss.
-    This combined loss is used to train the network so that both
-    benefits of the loss are leveraged.
-    """
+def multiclass_dice_coeff(input: Tensor, target: Tensor, reduce_batch_first: bool = False, epsilon: float = 1e-6):
+    # Average of Dice coefficient for all classes
+    return dice_coeff(input.flatten(0, 1), target.flatten(0, 1), reduce_batch_first, epsilon)
 
-    def __init__(self):
-        """Simple constructor for the class."""
-        super(BCEDiceLoss, self).__init__()
-        self.dice_loss = DiceLoss()
 
-    def forward(self, predicted, target):
-        """ Method for calculation of combined loss from sample."""
-        return F.binary_cross_entropy(predicted, target) \
-            + self.dice_loss(predicted, target)
+def dice_loss(input: Tensor, target: Tensor, multiclass: bool = False):
+    # Dice loss (objective to minimize) between 0 and 1
+    fn = multiclass_dice_coeff if multiclass else dice_coeff
+    return 1 - fn(input, target, reduce_batch_first=True)
+
+# this is testing
+# batch = 5
+# w = 512
+# h = 512
+# preds = torch.rand(batch, w, h)
+# images = torch.rand(batch, w, h)
+
+# print(dice_loss(preds, images))

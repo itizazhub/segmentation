@@ -22,16 +22,16 @@ class Config:
         self.test_ratio = 0.2
         self.random_state = 42
         self.image_size = 512
-        self.transform = False
-        self.DEBUG = False
+        # self.transform = False
+        # self.DEBUG = False
         self.batch_size = 1
 
         self.threshold = 0.5
         self.patience = 2
         self.factor = 0.8
-        self.learning_rate = 0.0001
+        self.learning_rate = 1e-5
         self.momentum = 0.999
-        self.weight_decay = 0.000000001
+        self.weight_decay = 1e-8
         self.epochs = 100
 
         self.filters = [16,32,64,128,256]

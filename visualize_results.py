@@ -18,9 +18,9 @@ def plot_loss():
     # Plot training loss
   #   plt.subplot(1, 2, 1)
     plt.plot(epochs, df['training_loss'], 'b', label='Training loss')
-    plt.plot(epochs, df['validation_loss'], 'r', label='Validation loss')
+    plt.plot(epochs, df['validation_dice_score'], 'r', label='validation_dice_score')
     plt.plot(epochs, df['scheduler_loss'], 'r', label='Scheduler loss')
-    plt.title('Training and validation loss')
+    plt.title('Training and validation_dice_score')
     plt.xlabel('Epochs')
     plt.ylabel('Loss')
     plt.legend()

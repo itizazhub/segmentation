@@ -13,11 +13,12 @@ when you make object of this class,
 '''
 
 from unet_model import UNet
-from loss import BCEDiceLoss, DiceLoss
+from loss import dice_loss, dice_coeff
 from dataset import DatasetCreator, TumorDataset
 from config import config
 
 from torch.utils.data import DataLoader
+import torch.nn.functional as F
 import torch.optim as optim
 import torch
 import pandas as pd
@@ -32,8 +33,8 @@ class Trainer:
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         self.model = UNet()
         self.model.to(self.device)
-        self.criterion = BCEDiceLoss().to(self.device)
-        self.dice_coefficient = DiceLoss()._dice_coefficient
+
+        self.criterion = nn.BCEWithLogitsLoss().to(self.device)
         self.optimizer = optim.RMSprop(self.model.parameters(),
                                 lr=config.learning_rate, weight_decay=config.weight_decay, momentum=config.momentum, foreach=True)
         self.scheduler = optim.lr_scheduler.ReduceLROnPlateau(self.optimizer,'max', factor=config.factor, patience=config.patience)
@@ -57,7 +58,7 @@ class Trainer:
 
     def setup_training_env(self):
         self.training_loss = []
-        self.validation_loss = []
+        self.validation_dice_score = []
         self.scheduler_loss = []
         # self.training_accuracy = []
         # self.validation_accuracy = []
@@ -74,34 +75,34 @@ class Trainer:
 
     def train_fn(self):
         logging.basicConfig(filename=config.log_file_path, level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-        best_loss = float(-1)
-        all_loss = float("inf")
+        best_dice_score = float(-1)
+        best_loss = float("inf")
         for epoch in range(config.epochs):
             self.model.train()
             # correct_predictions = 0
             # total_samples = 0
-            losses = []
+            epoch_loss = 0
             for img, label in iter(self.train_loader):
                 self.optimizer.zero_grad()
                 img, label = torch.tensor(img), torch.tensor(label)
                 img = img.to(self.device)
                 label = label.to(self.device)
                 pred = self.model(img)
-                loss = self.criterion(pred, label)
-                losses.append(loss.item())
+                loss = self.criterion(pred.squeeze(1), label.float())
+                loss += dice_loss(F.sigmoid(pred.squeeze(1)), label.float(), multiclass=False)
+                epoch_loss += loss.item()
                 loss.backward()
                 self.optimizer.step()
                 # Calculate accuracy
                 # _, predicted_labels = torch.max(pred, 1)
                 # correct_predictions += (predicted_labels == label).sum().item()
                 # total_samples += label.size(0)
-
-            self.training_loss.append(sum(losses) / len(losses))
+            self.training_loss.append(epoch_loss)
 
             # self.training_accuracy.append(correct_predictions / total_samples)
 
-            ################### Validation###################
-            losses = []
+            ################### Validation ###################
+            dice = 0
             # correct_predictions = 0
             # total_samples = 0
             self.model.eval()
@@ -112,37 +113,37 @@ class Trainer:
                     label = label.to(self.device)
                     self.model.to(self.device)
                     pred = self.model(img)
-                    loss = self.dice_coefficient(pred, label)
-                    losses.append(loss.item())
+                    pred = (F.sigmoid(pred) > 0.5).float()
+                    dice += dice_coeff(pred, label, reduce_batch_first=False)
                     # Calculate accuracy
                     # _, predicted_labels = torch.max(pred, 1)
                     # correct_predictions += (predicted_labels == label).sum().item()
                     # total_samples += label.size(0)
             self.model.train()
-            dice_value = 1 - sum(losses) / max(len(self.test_loader), 1)
-            self.scheduler.step(dice_value)
-            self.scheduler_loss.append(self.scheduler._last_lr[0])
-            self.validation_loss.append(dice_value)
+            dice_score = dice / max(len(self.test_loader), 1)
+            self.scheduler.step(dice_score)
+            self.scheduler_loss.append(self.scheduler.get_last_lr)
+            self.validation_dice_score.append(dice_score)
             # self.validation_accuracy.append(correct_predictions / total_samples)
 
-            logging.info(f'Epoch: {epoch}, Training Loss: {self.training_loss[-1]}, Validation Loss: {self.validation_loss[-1]}, Learning rate: {self.scheduler_loss[-1]}')
-            print(f'Epoch: {epoch}, Training Loss: {self.training_loss[-1]:.4f}, Validation Loss: {self.validation_loss[-1]:.4f}, Learning rate: {self.scheduler_loss[-1]}')
+            logging.info(f'Epoch: {epoch}, Training Loss: {self.training_loss[-1]}, Validation dice score: {self.validation_dice_score[-1]}')
+            print(f'Epoch: {epoch}, Training Loss: {self.training_loss[-1]}, Validation dice score: {self.validation_dice_score[-1]}')
             self.save_results_to_csv()
             # Save the model if the validation loss improves
-            if (self.validation_loss[-1] > best_loss):
-                best_loss = self.validation_loss[-1]
+            if (self.validation_dice_score[-1] > best_dice_score):
+                best_dice_score = self.validation_dice_score[-1]
                 torch.save({
                             'model_state_dict': self.model.state_dict(),
                             'optimizer_state_dict': self.optimizer.state_dict(),
-                        }, config.model_weights_path.joinpath("best.pth"))
+                        }, config.model_weights_path.joinpath(f"best_{epoch}.pth"))
                 print("---Best val weights and optimizer parameters are saved---------")
             #save training weights
-            if (self.training_loss[-1] < all_loss):
-                all_loss = self.training_loss[-1]
+            if (self.training_loss[-1] < best_loss):
+                best_loss = self.training_loss[-1]
                 torch.save({
                             'model_state_dict': self.model.state_dict(),
                             'optimizer_state_dict': self.optimizer.state_dict(),
-                        }, config.training_weights_path.joinpath(f"best.pth"))
+                        }, config.training_weights_path.joinpath(f"best_{epoch}.pth"))
                 print("---Best training weights and optimizer parameters are saved----")
 
 
@@ -172,7 +173,7 @@ class Trainer:
     def save_results_to_csv(self):
         data = {
             'training_loss': self.training_loss,
-            'validation_loss': self.validation_loss,
+            'validation_dice_score': self.validation_dice_score,
             'scheduler_loss': self.scheduler_loss
         }
         df = pd.DataFrame(data)
