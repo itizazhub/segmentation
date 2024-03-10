@@ -12,7 +12,7 @@ when you make object of this class,
 
 '''
 
-from unet_model import Unet
+from unet_model import UNet
 from loss import BCEDiceLoss, DiceLoss
 from dataset import DatasetCreator, TumorDataset
 from config import config
@@ -30,12 +30,13 @@ import math
 class Trainer:
     def __init__(self):
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
-        self.model = Unet()
+        self.model = UNet()
         self.model.to(self.device)
         self.criterion = BCEDiceLoss().to(self.device)
         self.dice_coefficient = DiceLoss()._dice_coefficient
-        self.optimizer = optim.SGD(self.model.parameters(), lr=config.learning_rate, momentum=config.momentum, weight_decay=config.weight_decay)
-        self.scheduler = optim.lr_scheduler.ReduceLROnPlateau(self.optimizer,'min', factor=0.1, patience=3)
+        self.optimizer = optim.RMSprop(self.model.parameters(),
+                                lr=config.learning_rate, weight_decay=config.weight_decay, momentum=config.momentum, foreach=True)
+        self.scheduler = optim.lr_scheduler.ReduceLROnPlateau(self.optimizer,'min', factor=0.8, patience=2)
         if config.load_weights:
             checkpoint_path = config.model_weights_path.joinpath("best.pth")
             if os.path.exists(checkpoint_path):
@@ -94,8 +95,7 @@ class Trainer:
                 # _, predicted_labels = torch.max(pred, 1)
                 # correct_predictions += (predicted_labels == label).sum().item()
                 # total_samples += label.size(0)
-            self.scheduler.step(sum(losses) / len(losses))
-            self.scheduler_loss.append(self.scheduler._last_lr[0])
+
             self.training_loss.append(sum(losses) / len(losses))
 
             # self.training_accuracy.append(correct_predictions / total_samples)
@@ -112,14 +112,17 @@ class Trainer:
                     label = label.to(self.device)
                     self.model.to(self.device)
                     pred = self.model(img)
-                    loss = self.criterion(pred, label)
+                    loss = self.dice_coefficient(pred, label)
                     losses.append(loss.item())
                     # Calculate accuracy
                     # _, predicted_labels = torch.max(pred, 1)
                     # correct_predictions += (predicted_labels == label).sum().item()
                     # total_samples += label.size(0)
-
-            self.validation_loss.append(sum(losses) / len(losses))
+            self.model.train()
+            dice_value = 1 - sum(losses) / max(len(self.test_loader), 1)
+            self.scheduler.step(dice_value)
+            self.scheduler_loss.append(self.scheduler._last_lr[0])
+            self.validation_loss.append(dice_value)
             # self.validation_accuracy.append(correct_predictions / total_samples)
 
             logging.info(f'Epoch: {epoch}, Training Loss: {self.training_loss[-1]}, Validation Loss: {self.validation_loss[-1]}, Learning rate: {self.scheduler_loss[-1]}')
