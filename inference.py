@@ -119,4 +119,4 @@ def inference(threshold=0.5):
     # return image, mask, output, score
 
 if __name__ == "__main__":
-    inference(0.7)
+    inference(0.5)
