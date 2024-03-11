@@ -36,7 +36,7 @@ class Trainer:
 
         self.criterion = nn.BCEWithLogitsLoss().to(self.device)
         self.optimizer = optim.RMSprop(self.model.parameters(),
-                                lr=config.learning_rate, weight_decay=config.weight_decay, momentum=config.momentum, foreach=True)
+                                lr=config.learning_rate) #, weight_decay=config.weight_decay, momentum=config.momentum, foreach=True)
         self.scheduler = optim.lr_scheduler.ReduceLROnPlateau(self.optimizer,'max', factor=config.factor, patience=config.patience)
         if config.load_weights:
             checkpoint_path = config.model_weights_path.joinpath("best.pth")
@@ -88,8 +88,8 @@ class Trainer:
                 img = img.to(self.device)
                 label = label.to(self.device)
                 pred = self.model(img)
-                loss = self.criterion(pred.squeeze(1), label.float())
-                loss += dice_loss(F.sigmoid(pred.squeeze(1)), label.float(), multiclass=False)
+                loss = self.criterion(pred.squeeze(1), label.squeeze(1).float())
+                loss += dice_loss(F.sigmoid(pred.squeeze(1)), label.squeeze(1).float(), multiclass=False)
                 epoch_loss += loss.item()
                 loss.backward()
                 self.optimizer.step()
@@ -97,7 +97,7 @@ class Trainer:
                 # _, predicted_labels = torch.max(pred, 1)
                 # correct_predictions += (predicted_labels == label).sum().item()
                 # total_samples += label.size(0)
-            self.training_loss.append(epoch_loss)
+            self.training_loss.append(epoch_loss / len(self.train_loader))
 
             # self.training_accuracy.append(correct_predictions / total_samples)
 
@@ -114,7 +114,7 @@ class Trainer:
                     self.model.to(self.device)
                     pred = self.model(img)
                     pred = (F.sigmoid(pred) > 0.5).float()
-                    dice += dice_coeff(pred, label, reduce_batch_first=False)
+                    dice += dice_coeff(pred.squeeze(1), label.squeeze(1), reduce_batch_first=False)
                     # Calculate accuracy
                     # _, predicted_labels = torch.max(pred, 1)
                     # correct_predictions += (predicted_labels == label).sum().item()
@@ -122,13 +122,13 @@ class Trainer:
             self.model.train()
             dice_score = dice / max(len(self.test_loader), 1)
             self.scheduler.step(dice_score)
-            self.scheduler_loss.append(self.scheduler.get_last_lr)
+            self.scheduler_loss.append(self.scheduler._last_lr[0])
             self.validation_dice_score.append(dice_score)
             # self.validation_accuracy.append(correct_predictions / total_samples)
 
-            logging.info(f'Epoch: {epoch}, Training Loss: {self.training_loss[-1]}, Validation dice score: {self.validation_dice_score[-1]}')
-            print(f'Epoch: {epoch}, Training Loss: {self.training_loss[-1]}, Validation dice score: {self.validation_dice_score[-1]}')
-            self.save_results_to_csv()
+            logging.info(f'Epoch: {epoch}, Training Loss: {self.training_loss[-1]}, Validation dice score: {self.validation_dice_score[-1]}, scheduler: {self.scheduler_loss[-1]}')
+            print(f'Epoch: {epoch}, Training Loss: {self.training_loss[-1]:0.4}, Validation dice score: {self.validation_dice_score[-1]:0.4}, scheduler: {self.scheduler_loss[-1]}')
+            # self.save_results_to_csv()
             # Save the model if the validation loss improves
             if (self.validation_dice_score[-1] > best_dice_score):
                 best_dice_score = self.validation_dice_score[-1]
@@ -176,7 +176,8 @@ class Trainer:
             'validation_dice_score': self.validation_dice_score,
             'scheduler_loss': self.scheduler_loss
         }
-        df = pd.DataFrame(data)
+        data_cpu = {key: value.cpu().numpy() for key, value in data.items()}
+        df = pd.DataFrame(data_cpu)
         if not os.path.exists(config.result_folder_path):
             os.mkdir(config.result_folder_path)
         df.to_csv(config.result_folder_path.joinpath("results.csv"), index=False)
