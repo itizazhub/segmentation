@@ -13,7 +13,7 @@ when you make object of this class,
 '''
 
 from unet_model import UNet
-from loss import dice_loss, dice_coeff
+from loss import DiceLoss, BCEDiceLoss
 from dataset import DatasetCreator, TumorDataset
 from config import config
 
@@ -34,7 +34,8 @@ class Trainer:
         self.model = UNet()
         self.model.to(self.device)
 
-        self.criterion = nn.BCEWithLogitsLoss().to(self.device)
+        self.criterion = BCEDiceLoss().to(self.device)
+        self.dice_score = DiceLoss().to(self.device)
         self.optimizer = optim.RMSprop(self.model.parameters(),
                                 lr=config.learning_rate, weight_decay=config.weight_decay, momentum=config.momentum, foreach=True)
         self.scheduler = optim.lr_scheduler.ReduceLROnPlateau(self.optimizer,'max', factor=config.factor, patience=config.patience)
@@ -88,8 +89,7 @@ class Trainer:
                 img = img.to(self.device)
                 label = label.to(self.device)
                 pred = self.model(img)
-                loss = self.criterion(pred.squeeze(1), label.squeeze(1).float())
-                loss += dice_loss(F.sigmoid(pred.squeeze(1)), label.squeeze(1).float(), multiclass=False)
+                loss = self.criterion(pred.float(), label.float())
                 epoch_loss += loss.item()
                 loss.backward()
                 self.optimizer.step()
@@ -113,8 +113,8 @@ class Trainer:
                     label = label.to(self.device)
                     self.model.to(self.device)
                     pred = self.model(img)
-                    pred = (F.sigmoid(pred) > 0.5).float()
-                    dice += dice_coeff(pred.squeeze(1), label.squeeze(1), reduce_batch_first=False)
+                    pred = (pred > 0.5)
+                    dice += (1.0 - self.dice_score(pred.float(), label.float()))
                     # Calculate accuracy
                     # _, predicted_labels = torch.max(pred, 1)
                     # correct_predictions += (predicted_labels == label).sum().item()
