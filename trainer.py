@@ -97,7 +97,7 @@ class Trainer:
                 # _, predicted_labels = torch.max(pred, 1)
                 # correct_predictions += (predicted_labels == label).sum().item()
                 # total_samples += label.size(0)
-            self.training_loss.append(epoch_loss / max(len(self.train_loader)), 1)
+            self.training_loss.append(epoch_loss / max(len(self.train_loader), 1))
 
             # self.training_accuracy.append(correct_predictions / total_samples)
 
@@ -123,14 +123,11 @@ class Trainer:
             dice_score = dice / max(len(self.test_loader), 1)
             self.scheduler.step(dice_score)
             self.scheduler_loss.append(self.scheduler._last_lr[0])
-            self.validation_dice_score.append(dice_score)
+            self.validation_dice_score.append(dice_score.cpu().numpy())
             # self.validation_accuracy.append(correct_predictions / total_samples)
 
             logging.info(f'Epoch: {epoch}, Training Loss: {self.training_loss[-1]}, Validation dice score: {self.validation_dice_score[-1]}, scheduler: {self.scheduler_loss[-1]}')
             print(f'Epoch: {epoch}, Training Loss: {self.training_loss[-1]:0.4}, Validation dice score: {self.validation_dice_score[-1]:0.4}, scheduler: {self.scheduler_loss[-1]}')
-            print(type(self.training_loss[-1]))
-            print(type(self.validation_dice_score[-1]))
-            print(type(self.scheduler_loss[-1]))
             self.save_results_to_csv()
             # Save the model if the validation loss improves
             if (self.validation_dice_score[-1] > best_dice_score):
@@ -179,8 +176,7 @@ class Trainer:
             'validation_dice_score': self.validation_dice_score,
             'scheduler_loss': self.scheduler_loss
         }
-        data_cpu = {key: value.cpu().numpy() for key, value in data.items()}
-        df = pd.DataFrame(data_cpu)
+        df = pd.DataFrame(data)
         if not os.path.exists(config.result_folder_path):
             os.mkdir(config.result_folder_path)
         df.to_csv(config.result_folder_path.joinpath("results.csv"), index=False)
