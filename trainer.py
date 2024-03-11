@@ -36,7 +36,7 @@ class Trainer:
 
         self.criterion = nn.BCEWithLogitsLoss().to(self.device)
         self.optimizer = optim.RMSprop(self.model.parameters(),
-                                lr=config.learning_rate) #, weight_decay=config.weight_decay, momentum=config.momentum, foreach=True)
+                                lr=config.learning_rate, weight_decay=config.weight_decay, momentum=config.momentum, foreach=True)
         self.scheduler = optim.lr_scheduler.ReduceLROnPlateau(self.optimizer,'max', factor=config.factor, patience=config.patience)
         if config.load_weights:
             checkpoint_path = config.model_weights_path.joinpath("best.pth")
