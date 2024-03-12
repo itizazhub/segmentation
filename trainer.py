@@ -35,12 +35,12 @@ class Trainer:
         self.model.to(self.device)
 
         self.criterion = BCEDiceLoss().to(self.device)
-        self.dice_score = DiceLoss().to(self.device)
+        self.dice_loss_fn = DiceLoss().to(self.device)
         self.optimizer = optim.RMSprop(self.model.parameters(),
-                                lr=config.learning_rate, weight_decay=config.weight_decay, momentum=config.momentum, foreach=True)
+                                lr=config.learning_rate)#, weight_decay=config.weight_decay, momentum=config.momentum, foreach=True)
         self.scheduler = optim.lr_scheduler.ReduceLROnPlateau(self.optimizer,'max', factor=config.factor, patience=config.patience)
         if config.load_weights:
-            checkpoint_path = config.model_weights_path.joinpath("best.pth")
+            checkpoint_path = config.model_weights_path.joinpath("best_3.pth")
             if os.path.exists(checkpoint_path):
                 checkpoint = torch.load(checkpoint_path)
                 self.model.load_state_dict(checkpoint['model_state_dict'])
@@ -97,8 +97,10 @@ class Trainer:
                 # _, predicted_labels = torch.max(pred, 1)
                 # correct_predictions += (predicted_labels == label).sum().item()
                 # total_samples += label.size(0)
-            self.training_loss.append(epoch_loss / max(len(self.train_loader), 1))
-
+            epoch_loss = epoch_loss / max(len(self.train_loader), 1)
+            self.scheduler.step(epoch_loss)
+            self.scheduler_loss.append(self.scheduler._last_lr[0])
+            self.training_loss.append(epoch_loss)
             # self.training_accuracy.append(correct_predictions / total_samples)
 
             ################### Validation ###################
@@ -114,15 +116,14 @@ class Trainer:
                     self.model.to(self.device)
                     pred = self.model(img)
                     pred = (pred > 0.5)
-                    dice += (1.0 - self.dice_score(pred.float(), label.float()))
+                    dice += (1.0 - self.dice_loss_fn(pred.float(), label.float()))
                     # Calculate accuracy
                     # _, predicted_labels = torch.max(pred, 1)
                     # correct_predictions += (predicted_labels == label).sum().item()
                     # total_samples += label.size(0)
             self.model.train()
-            dice_score = dice / max(len(self.test_loader), 1)
-            self.scheduler.step(dice_score)
-            self.scheduler_loss.append(self.scheduler._last_lr[0])
+            dice_score = dice / max(self.test_dataset.__len__(), 1)
+
             self.validation_dice_score.append(dice_score.cpu().numpy())
             # self.validation_accuracy.append(correct_predictions / total_samples)
 

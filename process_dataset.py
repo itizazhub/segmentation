@@ -32,7 +32,7 @@ def convert_matfiles_to_images(mat_files_path:Path, images_destination_path:Path
     mat_files_names = [str(file).split('/')[-1].split('.')[0] for file in mat_files_path.glob('*.mat')] # changes '\\' to '/'
     for filename in tqdm(mat_files_names):
         image_path = images_destination_path.joinpath(filename + '.png')
-        mask_path = masks_destination_path.joinpath(filename + '_mask.png')
+        mask_path = masks_destination_path.joinpath(filename + '.png')
         mat_file_path = mat_files_path.joinpath(filename + '.mat')
         # print(filename)
         # print(image_path)
@@ -50,7 +50,7 @@ def convert_matfiles_to_images(mat_files_path:Path, images_destination_path:Path
             else:
                 continue
     images = [i for i in images_destination_path.glob('*.png')]
-    print(f"Total of {len(images)} Images are converted from .mat files")
+    print(f"Total of {len(images) * 2} Images and Masks are converted from .mat files")
 
 
 if __name__ == '__main__':

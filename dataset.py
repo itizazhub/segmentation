@@ -124,9 +124,9 @@ class TumorDataset(Dataset):
 
 class DatasetCreator:
     def __init__(self) -> None:
-
         self.x = [i for i in config.images_path.glob("*.png")]
         self.y = [i for i in config.masks_path.glob("*.png")]
+        
     def split_data(self) -> tuple:
         # Split dataset into train, test, and validation sets
         train_x, test_x, train_y, test_y = train_test_split(self.x, self.y, test_size=config.test_ratio, random_state=config.random_state)
