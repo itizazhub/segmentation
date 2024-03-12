@@ -17,9 +17,9 @@ class Config:
         self.combined_image_mask = Path('combined_image_mask')
         self.log_file_path = Path('/content/drive/MyDrive/segmentation_project/training.log')
 
-        self.train_ratio = 0.8
+        self.train_ratio = 0.98
         # self.val_ratio = 0.2
-        self.test_ratio = 0.2
+        self.test_ratio = 0.02
         self.random_state = 42
         self.image_size = 512
         self.transform = True
