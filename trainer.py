@@ -113,7 +113,6 @@ class Trainer:
                     img, label = torch.tensor(img), torch.tensor(label)
                     img = img.to(self.device)
                     label = label.to(self.device)
-                    self.model.to(self.device)
                     pred = self.model(img)
                     pred = (pred > 0.5)
                     dice += (1.0 - self.dice_loss_fn(pred.float(), label.float()))
@@ -122,9 +121,9 @@ class Trainer:
                     # correct_predictions += (predicted_labels == label).sum().item()
                     # total_samples += label.size(0)
             self.model.train()
-            dice_score = dice / max(self.test_dataset.__len__(), 1)
+            dice = dice / max(self.test_dataset.__len__(), 1)
 
-            self.validation_dice_score.append(dice_score.cpu().numpy())
+            self.validation_dice_score.append(dice.cpu().numpy())
             # self.validation_accuracy.append(correct_predictions / total_samples)
 
             logging.info(f'Epoch: {epoch}, Training Loss: {self.training_loss[-1]}, Validation dice score: {self.validation_dice_score[-1]}, scheduler: {self.scheduler_loss[-1]}')

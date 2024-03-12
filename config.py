@@ -22,14 +22,14 @@ class Config:
         self.test_ratio = 0.2
         self.random_state = 42
         self.image_size = 512
-        self.transform = False
+        self.transform = True
         self.DEBUG = False
         self.batch_size = 2
 
         self.threshold = 0.5
-        self.patience = 5
+        self.patience = 3
         self.factor = 0.5
-        self.learning_rate = 1e-5
+        self.learning_rate = 1e-2
         self.momentum = 0.999
         self.weight_decay = 1e-8
         self.epochs = 150
