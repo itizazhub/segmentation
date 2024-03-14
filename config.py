@@ -36,7 +36,7 @@ class Config:
 
         self.filters = [16,32,64,128,256]
         self.dropout = 0.2
-        self.load_weights = True
+        self.load_weights = False
         
 
 

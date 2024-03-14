@@ -38,7 +38,7 @@ class Trainer:
         self.dice_loss_fn = DiceLoss().to(self.device)
         self.optimizer = optim.RMSprop(self.model.parameters(),
                                 lr=config.learning_rate, weight_decay=config.weight_decay, momentum=config.momentum, foreach=True)
-        self.scheduler = optim.lr_scheduler.ReduceLROnPlateau(self.optimizer,'min', factor=config.factor, patience=config.patience)
+        self.scheduler = optim.lr_scheduler.ReduceLROnPlateau(self.optimizer,'max', factor=config.factor, patience=config.patience)
         if config.load_weights:
             checkpoint_path = config.model_weights_path.joinpath("best_10.pth")
             if os.path.exists(checkpoint_path):
@@ -60,7 +60,7 @@ class Trainer:
     def setup_training_env(self):
         self.training_loss = []
         self.validation_dice_score = []
-        self.scheduler_loss = []
+        self.learning_rate = []
         # self.training_accuracy = []
         # self.validation_accuracy = []
         self.train_set, self.test_set = DatasetCreator().split_data()
@@ -99,7 +99,7 @@ class Trainer:
                 # total_samples += label.size(0)
             epoch_loss = epoch_loss / max(len(self.train_loader), 1)
             self.scheduler.step(epoch_loss)
-            self.scheduler_loss.append(self.scheduler._last_lr[0])
+            self.learning_rate.append(self.scheduler._last_lr[0])
             self.training_loss.append(epoch_loss)
             # self.training_accuracy.append(correct_predictions / total_samples)
 
@@ -126,8 +126,8 @@ class Trainer:
             self.validation_dice_score.append(dice.cpu().numpy())
             # self.validation_accuracy.append(correct_predictions / total_samples)
 
-            logging.info(f'Epoch: {epoch}, Training Loss: {self.training_loss[-1]}, Validation dice score: {self.validation_dice_score[-1]}, scheduler: {self.scheduler_loss[-1]}')
-            print(f'Epoch: {epoch}, Training Loss: {self.training_loss[-1]:0.4}, Validation dice score: {self.validation_dice_score[-1]:0.4}, scheduler: {self.scheduler_loss[-1]}')
+            logging.info(f'Epoch: {epoch}, Training Loss: {self.training_loss[-1]}, Validation dice score: {self.validation_dice_score[-1]}, learning_rate: {self.learning_rate[-1]}')
+            print(f'Epoch: {epoch}, Training Loss: {self.training_loss[-1]:0.4}, Validation dice score: {self.validation_dice_score[-1]:0.4}, learning_rate: {self.learning_rate[-1]}')
             self.save_results_to_csv()
             # Save the model if the validation loss improves
             if (self.validation_dice_score[-1] > best_dice_score):
@@ -174,7 +174,7 @@ class Trainer:
         data = {
             'training_loss': self.training_loss,
             'validation_dice_score': self.validation_dice_score,
-            'scheduler_loss': self.scheduler_loss
+            'learning_rate': self.learning_rate
         }
         df = pd.DataFrame(data)
         if not os.path.exists(config.result_folder_path):
