@@ -64,17 +64,20 @@ def inference(threshold=0.5):
 
     model.eval()
     # print(config.inference_images_path)
-    files = (config.images_path).glob("*.png")
+    images = (config.images_path).glob("*.png")
+    masks = (config.masks_path).glob("*.png")
     with torch.no_grad():
-        for image_name in files:
+        for image_name, mask_name in zip(images, masks):
             # print(image_name)
             image = Image.open((image_name))
-            image = transformation(image)
-            image = TF.to_tensor(image)
-            image = image.unsqueeze(dim=0)
-            image = image.to(device)
+            mask = Image.open((mask_name))
+            
+            image1 = transformation(image)
+            image1 = TF.to_tensor(image1)
+            image1 = image1.unsqueeze(dim=0)
+            image1 = image1.to(device)
             model.to(device)
-            pred_mask = model(image)
+            pred_mask = model(image1)
             pred_mask = (pred_mask > threshold)
             pred_mask = pred_mask.squeeze().detach().cpu()
             image = image.squeeze().detach().cpu()
@@ -87,13 +90,18 @@ def inference(threshold=0.5):
             img.save(config.inference_out_images_path.joinpath(image_name))
             mask.save(config.inference_out_masks_path.joinpath("mask"+image_name))
 
-            plt.subplot(1, 2, 1)
+            plt.subplot(1, 3, 1)
+            plt.imshow(mask, cmap='gray')  # Assuming pred_mask is single-channel
+            plt.title('Original Mask')
+            plt.axis('off')
+
+            plt.subplot(1, 3, 2)
             plt.imshow(image, cmap='gray')
             plt.title('Original Image')
             plt.axis('off')
             
             # Plotting predicted mask
-            plt.subplot(1, 2, 2)
+            plt.subplot(1, 3, 3)
             plt.imshow(pred_mask, cmap='gray')  # Assuming pred_mask is single-channel
             plt.title('Predicted Mask')
             plt.axis('off')

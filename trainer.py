@@ -38,7 +38,7 @@ class Trainer:
         self.dice_loss_fn = DiceLoss().to(self.device)
         self.optimizer = optim.RMSprop(self.model.parameters(),
                                 lr=config.learning_rate, weight_decay=config.weight_decay, momentum=config.momentum, foreach=True)
-        self.scheduler = optim.lr_scheduler.ReduceLROnPlateau(self.optimizer,'max', factor=config.factor, patience=config.patience)
+        self.scheduler = optim.lr_scheduler.ReduceLROnPlateau(self.optimizer,'min', factor=config.factor, patience=config.patience)
         if config.load_weights:
             checkpoint_path = config.model_weights_path.joinpath("best_10.pth")
             if os.path.exists(checkpoint_path):

@@ -29,7 +29,7 @@ class Config:
         self.threshold = 0.5
         self.patience = 2
         self.factor = 0.1
-        self.learning_rate = 1e-2
+        self.learning_rate = 1e-4
         self.momentum = 0.999
         self.weight_decay = 1e-8
         self.epochs = 150
