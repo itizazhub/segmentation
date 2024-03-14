@@ -27,9 +27,9 @@ class Config:
         self.batch_size = 2
 
         self.threshold = 0.5
-        self.patience = 2
-        self.factor = 0.1
-        self.learning_rate = 1e-4
+        self.patience = 5
+        self.factor = 0.5
+        self.learning_rate = 1e-5
         self.momentum = 0.999
         self.weight_decay = 1e-8
         self.epochs = 150
