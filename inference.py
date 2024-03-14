@@ -51,7 +51,7 @@ def inference(threshold=0.5):
     device = "cuda" if torch.cuda.is_available() else "cpu"
     model = UNet()
     model.to(device)
-    checkpoint_path = config.model_weights_path.joinpath("best.pth")
+    checkpoint_path = config.training_weights_path.joinpath("best_11.pth")
     if os.path.exists(checkpoint_path):
         checkpoint = torch.load(checkpoint_path, map_location=torch.device('cpu'))
         model.load_state_dict(checkpoint['model_state_dict'])
@@ -81,7 +81,7 @@ def inference(threshold=0.5):
             pred_mask = pred_mask.numpy()
             mask = Image.fromarray(pred_mask)
             # print(image.shape)
-            image_name = str(image_name).split('\\')[-1]
+            image_name = str(image_name).split('/')[-1]
             img = TF.to_pil_image(image)
             img = img.convert('L')
             img.save(config.inference_out_images_path.joinpath(image_name))

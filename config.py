@@ -27,8 +27,8 @@ class Config:
         self.batch_size = 2
 
         self.threshold = 0.5
-        self.patience = 3
-        self.factor = 0.5
+        self.patience = 2
+        self.factor = 0.1
         self.learning_rate = 1e-2
         self.momentum = 0.999
         self.weight_decay = 1e-8
@@ -36,7 +36,7 @@ class Config:
 
         self.filters = [16,32,64,128,256]
         self.dropout = 0.2
-        self.load_weights = False
+        self.load_weights = True
         
 
 
