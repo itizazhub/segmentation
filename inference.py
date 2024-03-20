@@ -10,22 +10,6 @@ from config import config
 import os
 
 def inference(threshold=0.5):
-    """ Calculate the output mask on a single input data.
-    Parameters:
-        data(dict): Contains the index, image, mask torch.Tensor.
-                    'index': Index of the image.
-                    'image': Contains the tumor image torch.Tensor.
-                    'mask' : Contains the mask image torch.Tensor.
-        threshold(float): Threshold value after which value will be part of output.
-                            Default: 0.5
-
-    Returns:
-        image(numpy.ndarray): 512x512 Original brain scanned image.
-        mask(numpy.ndarray): 512x512 Original mask of scanned image.
-        output(numpy.ndarray): 512x512 Generated mask of scanned image.
-        score(float): Sørensen–Dice Coefficient for mask and output.
-                        Calculates how similar are the two images.
-    """
 
     if not os.path.isdir(config.result_folder_path):
         os.mkdir(config.result_folder_path)
@@ -51,14 +35,10 @@ def inference(threshold=0.5):
     device = "cuda" if torch.cuda.is_available() else "cpu"
     model = UNet()
     model.to(device)
-    checkpoint_path = config.training_weights_path.joinpath("best_11.pth")
+    checkpoint_path = config.training_weights_path.joinpath(config.best_weights)
     if os.path.exists(checkpoint_path):
         checkpoint = torch.load(checkpoint_path, map_location=torch.device('cpu'))
         model.load_state_dict(checkpoint['model_state_dict'])
-    # checkpoint_path = config.pre_trained_model_path.joinpath("weights.pt")
-    # if os.path.exists(checkpoint_path):
-    #     checkpoint = torch.load(checkpoint_path, map_location=torch.device('cpu'))
-    #     model.load_state_dict(checkpoint)
     else:
         return "No Weights are Found"
 

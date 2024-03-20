@@ -40,7 +40,7 @@ class Trainer:
                                 lr=config.learning_rate, weight_decay=config.weight_decay, momentum=config.momentum, foreach=True)
         self.scheduler = optim.lr_scheduler.ReduceLROnPlateau(self.optimizer,'min', factor=config.factor, patience=config.patience)
         if config.load_weights:
-            checkpoint_path = config.model_weights_path.joinpath("best_10.pth")
+            checkpoint_path = config.model_weights_path.joinpath("best_128.pth")
             if os.path.exists(checkpoint_path):
                 checkpoint = torch.load(checkpoint_path)
                 self.model.load_state_dict(checkpoint['model_state_dict'])
@@ -48,21 +48,15 @@ class Trainer:
                 print("Best weights and optimizer parameters are loaded")
 
             else:
-                if os.path.exists(config.pre_trained_model_path):
-                    checkpoint_path = config.pre_trained_model_path.joinpath('weights.pt')
-                    checkpoint = torch.load(checkpoint_path) #, map_location=torch.device('cpu')
-                    self.model.load_state_dict(checkpoint, strict=False)
-                    print("Pre-trained weights are loaded")
+                print("Starting from scratch")
         else:
-            print("Starting from scratch")
-        # print(f"Train size: {train_set.__len__()} Test size: {test_set.__len__()}")
+                print("Starting from scratch")
+
 
     def setup_training_env(self):
         self.training_loss = []
         self.validation_dice_score = []
         self.learning_rate = []
-        # self.training_accuracy = []
-        # self.validation_accuracy = []
         self.train_set, self.test_set = DatasetCreator().split_data()
         self.train_dataset = TumorDataset(self.train_set)
         self.test_dataset = TumorDataset(self.test_set)
@@ -80,8 +74,6 @@ class Trainer:
         best_loss = float("inf")
         for epoch in range(config.epochs):
             self.model.train()
-            # correct_predictions = 0
-            # total_samples = 0
             epoch_loss = 0
             for img, label in iter(self.train_loader):
                 self.optimizer.zero_grad()
@@ -93,20 +85,13 @@ class Trainer:
                 epoch_loss += loss.item()
                 loss.backward()
                 self.optimizer.step()
-                # Calculate accuracy
-                # _, predicted_labels = torch.max(pred, 1)
-                # correct_predictions += (predicted_labels == label).sum().item()
-                # total_samples += label.size(0)
             epoch_loss = epoch_loss / max(len(self.train_loader), 1)
             self.scheduler.step(epoch_loss)
             self.learning_rate.append(self.scheduler._last_lr[0])
             self.training_loss.append(epoch_loss)
-            # self.training_accuracy.append(correct_predictions / total_samples)
 
             ################### Validation ###################
             dice = 0
-            # correct_predictions = 0
-            # total_samples = 0
             self.model.eval()
             with torch.no_grad():
                 for img, label in iter(self.test_loader):
@@ -116,15 +101,10 @@ class Trainer:
                     pred = self.model(img)
                     pred = (pred > 0.5)
                     dice += (1.0 - self.dice_loss_fn(pred.float(), label.float()))
-                    # Calculate accuracy
-                    # _, predicted_labels = torch.max(pred, 1)
-                    # correct_predictions += (predicted_labels == label).sum().item()
-                    # total_samples += label.size(0)
+
             self.model.train()
             dice = dice / max(self.test_dataset.__len__(), 1)
-
             self.validation_dice_score.append(dice.cpu().numpy())
-            # self.validation_accuracy.append(correct_predictions / total_samples)
 
             logging.info(f'Epoch: {epoch}, Training Loss: {self.training_loss[-1]}, Validation dice score: {self.validation_dice_score[-1]}, learning_rate: {self.learning_rate[-1]}')
             print(f'Epoch: {epoch}, Training Loss: {self.training_loss[-1]:0.4}, Validation dice score: {self.validation_dice_score[-1]:0.4}, learning_rate: {self.learning_rate[-1]}')
@@ -146,30 +126,6 @@ class Trainer:
                         }, config.training_weights_path.joinpath(f"best_{epoch}.pth"))
                 print("---Best training weights and optimizer parameters are saved----")
 
-
-    def test_fn(self):
-        losses = []
-        # correct_predictions = 0
-        # total_samples = 0
-        self.model.eval()
-        with torch.no_grad():
-            for img, label in iter(self.test_loader):
-                img, label = torch.tensor(img), torch.tensor(label)
-                img = img.to(self.device)
-                label = label.to(self.device)
-                self.model.to(self.device)
-                pred = self.model(img)
-                pred = (pred > config.threshold)
-                loss = self.dice_coefficient(pred, label)
-                losses.append(loss.item())
-                # Calculate accuracy
-                # _, predicted_labels = torch.max(pred, 1)
-                # correct_predictions += (predicted_labels == label).sum().item()
-                # total_samples += label.size(0)
-                
-        print("Dice Loss: ", sum(losses) / len(losses))
-
-
     def save_results_to_csv(self):
         data = {
             'training_loss': self.training_loss,
@@ -180,7 +136,4 @@ class Trainer:
         if not os.path.exists(config.result_folder_path):
             os.mkdir(config.result_folder_path)
         df.to_csv(config.result_folder_path.joinpath("results.csv"), index=False)
-        # df_classes = pd.DataFrame(self.classes)
-        # df_classes.to_csv(Path(config.result_folder_path).joinpath("classes.csv"), index=False)
-
 

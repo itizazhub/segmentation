@@ -16,25 +16,31 @@ def plot_loss():
     plt.figure(figsize=(12, 6))
 
     # Plot training loss
-  #   plt.subplot(1, 2, 1)
+    plt.subplot(1, 3, 1)
     plt.plot(epochs, df['training_loss'], 'b', label='Training loss')
-    plt.plot(epochs, df['validation_dice_score'], 'r', label='validation_dice_score')
-    plt.plot(epochs, df['scheduler_loss'], 'r', label='Scheduler loss')
-    plt.title('Training and validation_dice_score')
+    # plt.plot(epochs, df['validation_dice_score'], 'r', label='validation_dice_score')
+    # plt.plot(epochs, df['learning_rate'], 'r', label='learning rate')
+    plt.title('Training Loss')
     plt.xlabel('Epochs')
     plt.ylabel('Loss')
     plt.legend()
 
-    # Plot training accuracy
-    # plt.subplot(1, 2, 2)
-    # plt.plot(epochs, df['training_accuracy'], 'b', label='Training accuracy')
-    # plt.plot(epochs, df['validation_accuracy'], 'r', label='Validation accuracy')
-    # plt.title('Training and validation accuracy')
-    # plt.xlabel('Epochs')
-    # plt.ylabel('Accuracy')
-    # plt.legend()
+    # Plot Validation Dice Score
+    plt.subplot(1, 3, 2)
+    plt.plot(epochs, df['validation_dice_score'], 'r', label='Validation Dice Score')
+    plt.title('Validation Dice Score')
+    plt.xlabel('Epochs')
+    plt.ylabel('Dice Score')
+    plt.legend()
 
-    plt.savefig(config.result_folder_path.joinpath('loss_plot.png'))
+    plt.subplot(1, 3, 3)
+    plt.plot(epochs, df['learning_rate'], 'r', label='Learning Rate')
+    plt.title('Learning Rate')
+    plt.xlabel('Epochs')
+    plt.ylabel('Learning Rate')
+    plt.legend()
+
+    plt.savefig(config.result_folder_path.joinpath('plot.png'))
     
     plt.tight_layout()
     plt.show()
