@@ -32,7 +32,7 @@ class Config:
         self.learning_rate = 1e-5
         self.momentum = 0.999
         self.weight_decay = 1e-8
-        self.epochs = 200
+        self.epochs = 150
 
         self.filters = [16,32,64,128,256]
         self.load_weights = False

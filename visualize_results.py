@@ -13,13 +13,11 @@ def plot_loss():
     df = pd.read_csv(Path(config.result_folder_path).joinpath("results.csv"))
     epochs = range(1, config.epochs + 1)
 
-    plt.figure(figsize=(12, 6))
+    plt.figure(figsize=(18, 6))  # Adjust figsize as needed
 
     # Plot training loss
     plt.subplot(1, 3, 1)
     plt.plot(epochs, df['training_loss'], 'b', label='Training loss')
-    # plt.plot(epochs, df['validation_dice_score'], 'r', label='validation_dice_score')
-    # plt.plot(epochs, df['learning_rate'], 'r', label='learning rate')
     plt.title('Training Loss')
     plt.xlabel('Epochs')
     plt.ylabel('Loss')
@@ -33,18 +31,20 @@ def plot_loss():
     plt.ylabel('Dice Score')
     plt.legend()
 
+    # Plot Learning Rate
     plt.subplot(1, 3, 3)
-    plt.plot(epochs, df['learning_rate'], 'r', label='Learning Rate')
+    plt.plot(epochs, df['learning_rate'], 'g', label='Learning Rate')
     plt.title('Learning Rate')
     plt.xlabel('Epochs')
     plt.ylabel('Learning Rate')
     plt.legend()
 
-    plt.savefig(config.result_folder_path.joinpath('plot.png'))
-    
+    # Save the plot
     plt.tight_layout()
-    plt.show()
+    plt.savefig(config.result_folder_path.joinpath('plot.png'))
 
+    # Show the plot
+    plt.show()
 
 def plot_inference_result(image, mask, output, title, transparency=0.38):
     """ Plots a 2x3 plot with comparisons of output and original image.
