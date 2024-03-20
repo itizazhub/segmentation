@@ -5,10 +5,12 @@ import pandas as pd
 from skimage.measure import label, regionprops
 from PIL import Image
 from skimage.feature import greycomatrix, greycoprops
+import warnings
+warnings.filterwarnings('ignore')
 # %matplotlib inline
 
 def extract_features(mask, result):
-    pixel_spacing_x, pixel_spacing_y = (0.938, 0.938)
+    pixel_spacing_x, pixel_spacing_y = (0.5, 0.5)
     
     # Compute area
     label_img = label(mask, connectivity=mask.ndim)
