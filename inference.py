@@ -5,33 +5,33 @@ import matplotlib.pyplot as plt
 import torchvision.transforms as transforms
 import torchvision.transforms.functional as TF
 from unet_model import UNet
-from pathlib import Path
 from config import config
 import os
 
 def inference(threshold=0.5):
-
+    
     if not os.path.isdir(config.result_folder_path):
         os.mkdir(config.result_folder_path)
 
     if not os.path.isdir(config.combined_image_mask):
         os.mkdir(config.combined_image_mask)
-    
+
     if not os.path.isdir(config.inference_out_images_path):
         os.mkdir(config.inference_out_images_path)
 
     if not os.path.isdir(config.inference_out_masks_path):
         os.mkdir(config.inference_out_masks_path)
-    
+
     if not os.path.isdir(config.inference_images_path):
-        return f"No {config.inference_images_path} is Found"
+        print(f"No {config.inference_images_path} is Found")
+        return 0
 
     transformation = transforms.Compose([
             transforms.Grayscale(),
             transforms.Resize((config.image_size, config.image_size))
         ])
 
-
+    
     device = "cuda" if torch.cuda.is_available() else "cpu"
     model = UNet()
     model.to(device)
@@ -44,14 +44,10 @@ def inference(threshold=0.5):
 
     model.eval()
     # print(config.inference_images_path)
-    images = (config.images_path).glob("*.png")
-    masks = (config.masks_path).glob("*.png")
+    images = config.inference_images_path.glob("*.png")
     with torch.no_grad():
-        for image_name, mask_name in zip(images, masks):
-            # print(image_name)
-            image = Image.open((image_name))
-            mask = Image.open((mask_name))
-            
+        for image_name in images:
+            image = Image.open((image_name))            
             image1 = transformation(image)
             image1 = TF.to_tensor(image1)
             image1 = image1.unsqueeze(dim=0)
@@ -60,28 +56,15 @@ def inference(threshold=0.5):
             pred_mask = model(image1)
             pred_mask = (pred_mask > threshold)
             pred_mask = pred_mask.squeeze().detach().cpu()
-            # image = image.squeeze().detach().cpu()
             pred_mask = pred_mask.numpy()
-            mask = Image.fromarray(pred_mask)
-            # print(image.shape)
             image_name = str(image_name).split('/')[-1]
-            img = TF.to_pil_image(image)
-            img = img.convert('L')
-            img.save(config.inference_out_images_path.joinpath(image_name))
-            mask.save(config.inference_out_masks_path.joinpath("mask"+image_name))
 
-            plt.subplot(1, 3, 1)
-            plt.imshow(mask, cmap='gray')
-            plt.title('Original Mask')
-            plt.axis('off')
-
-            plt.subplot(1, 3, 2)
+            plt.subplot(1, 2, 1)
             plt.imshow(image, cmap='gray')
             plt.title('Original Image')
             plt.axis('off')
             
-            # Plotting predicted mask
-            plt.subplot(1, 3, 3)
+            plt.subplot(1, 2, 2)
             plt.imshow(pred_mask, cmap='gray')
             plt.title('Predicted Mask')
             plt.axis('off')
