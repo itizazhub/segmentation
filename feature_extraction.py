@@ -64,8 +64,8 @@ if __name__ == "__main__":
             image = np.array(Image.open(image_path).convert('L'))
             result = mask * image
 
-            perimeter, area, circularity,\
-            eccentricity, texture_features, radius, diameter = extract_features(mask, result)
+            perimeter, area, radius, diameter,\
+            circularity, eccentricity, texture_features = extract_features(mask, result)
 
             feature_dict['perimeter'].append(perimeter)
             feature_dict['area'].append(area)
