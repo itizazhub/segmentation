@@ -50,7 +50,7 @@ def extract_features(mask, result):
     # Combine texture features
     texture_features = round(np.mean((contrast, energy, homogeneity)), 4)
 
-    return round(perimeter, 4), round(area, 4) , circularity, eccentricity, texture_features, round(radius, 4), round(diameter, 4)
+    return round(perimeter, 4), round(area, 4) , round(radius, 4), round(diameter, 4), circularity, eccentricity, texture_features
 
 if __name__ == "__main__":
     masks_paths = config.masks_path.glob("*.png")
