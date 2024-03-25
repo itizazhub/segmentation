@@ -18,10 +18,10 @@ def makedir(path:Path):
 def unzip(zipped_file_path:Path, destination_folder_path:Path):
      if not (os.path.exists(zipped_file_path)):
         print(f'The zipped_file_path is not Available : {zipped_file_path}')
-        return
+        return 0
      if not (os.path.isdir(destination_folder_path)):
         print(f'The destination_folder_path is not Available : {destination_folder_path}')
-        return
+        return 0
      
      with ZipFile(zipped_file_path, 'r') as zipfile:
         print(f'\tExtracting files of {zipped_file_path}')
@@ -34,10 +34,6 @@ def convert_matfiles_to_images(mat_files_path:Path, images_destination_path:Path
         image_path = images_destination_path.joinpath(filename + '.png')
         mask_path = masks_destination_path.joinpath(filename + '.png')
         mat_file_path = mat_files_path.joinpath(filename + '.mat')
-        # print(filename)
-        # print(image_path)
-        # print(mask_path)
-        # print(mat_file_path)
         with h5py.File(mat_file_path, 'r') as mat_file:
             cjdata_group = mat_file['cjdata']
             label = cjdata_group['label'][0][0]

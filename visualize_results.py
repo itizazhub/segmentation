@@ -9,6 +9,7 @@ import os
 def plot_loss():
   if not os.path.exists(config.result_folder_path):
       print("No such dir found: ", config.result_folder_path)
+      return 0
   else:
     df = pd.read_csv(Path(config.result_folder_path).joinpath("results.csv"))
     epochs = range(1, config.epochs + 1)
@@ -47,21 +48,6 @@ def plot_loss():
     plt.show()
 
 def plot_inference_result(image, mask, output, title, transparency=0.38):
-    """ Plots a 2x3 plot with comparisons of output and original image.
-    Works best with Jupyter Notebook/Lab.
-    Parameters:
-        image(numpy.ndarray): Array containing the original image of MRI scan.
-        mask(numpy.ndarray): Array containing the original mask of tumor.
-        output(numpy.ndarray): Model constructed mask from input image.
-        title(str): Title of the plot to be used.
-        transparency(float): Transparency level of mask on images.
-                             Default: 0.38
-        save_path(str): Saves the plot to the location specified.
-                        Does nothing if None. 
-                        Default: None
-    Return:
-        None
-    """
 
     fig, axs = plt.subplots(2, 3, sharex=True, sharey=True, figsize=(
         20, 15), gridspec_kw={'wspace': 0.025, 'hspace': 0.010})

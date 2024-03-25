@@ -19,10 +19,10 @@ def extract_features(mask, result):
     area = props[0].area * pixel_spacing_x * pixel_spacing_y
 
     # Calculate the radius
-    radius = round(math.sqrt(area / math.pi), 4)
+    radius = math.sqrt(area / math.pi)
 
     # Calculate the diameter
-    diameter = round(2 * radius, 4)
+    diameter = 2 * radius
 
     print("Diameter:", diameter, "mm")
 
@@ -52,7 +52,7 @@ def extract_features(mask, result):
     # Combine texture features
     texture_features = round(np.mean((contrast, energy, homogeneity)), 4)
 
-    return round(perimeter, 4), round(area, 4) , circularity, eccentricity, texture_features, radius, diameter
+    return round(perimeter, 4), round(area, 4) , circularity, eccentricity, texture_features, round(radius, 4), round(diameter, 4)
 
 if __name__ == "__main__":
     masks_paths = config.masks_path.glob("*.png")

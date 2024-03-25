@@ -9,22 +9,13 @@ from config import config
 import os
 
 def inference(threshold=0.5):
-    
-    if not os.path.isdir(config.result_folder_path):
-        os.mkdir(config.result_folder_path)
-
-    if not os.path.isdir(config.combined_image_mask):
-        os.mkdir(config.combined_image_mask)
-
-    if not os.path.isdir(config.inference_out_images_path):
-        os.mkdir(config.inference_out_images_path)
-
-    if not os.path.isdir(config.inference_out_masks_path):
-        os.mkdir(config.inference_out_masks_path)
 
     if not os.path.isdir(config.inference_images_path):
         print(f"No {config.inference_images_path} is Found")
         return 0
+    
+    if not os.path.isdir(config.combined_image_mask):
+        os.mkdir(config.combined_image_mask)
 
     transformation = transforms.Compose([
             transforms.Grayscale(),
@@ -40,7 +31,8 @@ def inference(threshold=0.5):
         checkpoint = torch.load(checkpoint_path, map_location=torch.device('cpu'))
         model.load_state_dict(checkpoint['model_state_dict'])
     else:
-        return "No Weights are Found"
+        print("No Weights are Found")
+        return 0
 
     model.eval()
     # print(config.inference_images_path)

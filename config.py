@@ -11,8 +11,6 @@ class Config:
         self.training_weights_path = Path('/content/drive/MyDrive/segmentation_project/all_weights')
         self.result_folder_path = Path('/content/drive/MyDrive/segmentation_project/results')
         self.inference_images_path = Path('inference_images')
-        self.inference_out_images_path = Path('inference_out_images')
-        self.inference_out_masks_path = Path('inference_out_masks')
         self.combined_image_mask = Path('combined_image_mask')
         self.log_file_path = Path('/content/drive/MyDrive/segmentation_project/training.log')
 

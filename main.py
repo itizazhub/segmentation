@@ -17,6 +17,6 @@ if __name__ == "__main__":
     trainer_obj = Trainer()
     trainer_obj.setup_training_env()
     trainer_obj.train_fn()
-    trainer_obj.save_results_to_csv()
+
 
     
