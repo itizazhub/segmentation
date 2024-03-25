@@ -60,7 +60,7 @@ def inference(threshold=0.5):
             pred_mask = model(image1)
             pred_mask = (pred_mask > threshold)
             pred_mask = pred_mask.squeeze().detach().cpu()
-            image = image.squeeze().detach().cpu()
+            # image = image.squeeze().detach().cpu()
             pred_mask = pred_mask.numpy()
             mask = Image.fromarray(pred_mask)
             # print(image.shape)
@@ -71,7 +71,7 @@ def inference(threshold=0.5):
             mask.save(config.inference_out_masks_path.joinpath("mask"+image_name))
 
             plt.subplot(1, 3, 1)
-            plt.imshow(mask, cmap='gray')  # Assuming pred_mask is single-channel
+            plt.imshow(mask, cmap='gray')
             plt.title('Original Mask')
             plt.axis('off')
 
@@ -82,7 +82,7 @@ def inference(threshold=0.5):
             
             # Plotting predicted mask
             plt.subplot(1, 3, 3)
-            plt.imshow(pred_mask, cmap='gray')  # Assuming pred_mask is single-channel
+            plt.imshow(pred_mask, cmap='gray')
             plt.title('Predicted Mask')
             plt.axis('off')
             
@@ -90,21 +90,6 @@ def inference(threshold=0.5):
             plt.savefig(config.combined_image_mask.joinpath(image_name))
             # plt.show()
         
-
-    # image = data['image'].numpy()
-    # mask = data['mask'].numpy()
-
-    # image_tensor = torch.Tensor(data['image'])
-    # image_tensor = image_tensor.view((-1, 1, 512, 512)).to(device)
-    # output = model(image_tensor) #.detach().cpu()
-    # output = (output > threshold)
-    # # output = output.numpy()
-
-    # # image = np.resize(image, (512, 512))
-    # # mask = np.resize(mask, (512, 512))
-    # # output = np.resize(output, (512, 512))
-    # score = diceloss(output, mask)
-    # return image, mask, output, score
 
 if __name__ == "__main__":
     inference(0.5)
