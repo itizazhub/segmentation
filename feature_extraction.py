@@ -7,6 +7,7 @@ from PIL import Image
 from skimage.feature import greycomatrix, greycoprops
 import warnings
 warnings.filterwarnings('ignore')
+import math
 # %matplotlib inline
 
 def extract_features(mask, result):
@@ -16,6 +17,14 @@ def extract_features(mask, result):
     label_img = label(mask, connectivity=mask.ndim)
     props = regionprops(label_img)
     area = props[0].area * pixel_spacing_x * pixel_spacing_y
+
+    # Calculate the radius
+    radius = round(math.sqrt(area / math.pi), 4)
+
+    # Calculate the diameter
+    diameter = round(2 * radius, 4)
+
+    print("Diameter:", diameter, "mm")
 
     # Compute perimeter
     perimeter = props[0].perimeter * (pixel_spacing_x + pixel_spacing_y) / 2
@@ -43,13 +52,13 @@ def extract_features(mask, result):
     # Combine texture features
     texture_features = round(np.mean((contrast, energy, homogeneity)), 4)
 
-    return round(perimeter, 4), round(area, 4) , circularity, eccentricity, texture_features
+    return round(perimeter, 4), round(area, 4) , circularity, eccentricity, texture_features, radius, diameter
 
 if __name__ == "__main__":
     masks_paths = config.masks_path.glob("*.png")
     images_paths = config.images_path.glob("*.png")
 
-    feature_dict = {'perimeter' : [], 'area' : [], 'circularity' : [], 'eccentricity' : [], 'texture_features' : []}
+    feature_dict = {'perimeter' : [], 'area' : [], 'radius': [], 'diameter':[], 'circularity' : [], 'eccentricity' : [], 'texture_features' : []}
     
     for (image_path, mask_path) in zip(images_paths, masks_paths):
         try:
@@ -58,10 +67,12 @@ if __name__ == "__main__":
             result = mask * image
 
             perimeter, area, circularity,\
-            eccentricity, texture_features = extract_features(mask, result)
+            eccentricity, texture_features, radius, diameter = extract_features(mask, result)
 
             feature_dict['perimeter'].append(perimeter)
             feature_dict['area'].append(area)
+            feature_dict['radius'].append(radius)
+            feature_dict['diameter'].append(diameter)
             feature_dict['circularity'].append(circularity)
             feature_dict['eccentricity'].append(eccentricity)
             feature_dict['texture_features'].append(texture_features)
