@@ -24,8 +24,6 @@ def extract_features(mask, result):
     # Calculate the diameter
     diameter = 2 * radius
 
-    print("Diameter:", diameter, "mm")
-
     # Compute perimeter
     perimeter = props[0].perimeter * (pixel_spacing_x + pixel_spacing_y) / 2
 
