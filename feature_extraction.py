@@ -8,7 +8,6 @@ from skimage.feature import greycomatrix, greycoprops
 import warnings
 warnings.filterwarnings('ignore')
 import math
-# %matplotlib inline
 
 def extract_features(mask, result):
     pixel_spacing_x, pixel_spacing_y = (0.5, 0.5)

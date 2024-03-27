@@ -1,32 +1,14 @@
-'''
-need model
-data loaders
-train model
-
-when you make object of this class,
-1. constrcutor provides model with best weights, loss funtions, and device
-2. setup_training_env(), the setup for the training prepares eg dataset, dataloaders and optimizer
-3. train(), trains the model and saves best weights and optimizer
-4. test(), runs over test loader and prints total loss
-5. save_results_to_csv(), saves histoty in csv file
-
-'''
-
 from unet_model import UNet
 from loss import DiceLoss, BCEDiceLoss
 from dataset import DatasetCreator, TumorDataset
 from config import config
 
 from torch.utils.data import DataLoader
-import torch.nn.functional as F
 import torch.optim as optim
 import torch
 import pandas as pd
 import logging
 import os
-from pathlib import Path
-import torch.nn as nn
-import math
 
 class Trainer:
     def __init__(self):

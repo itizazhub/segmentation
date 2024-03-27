@@ -1,9 +1,6 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from config import config
-# from torchsummary import summary
-
 
 class DoubleConv(nn.Module):
     """(convolution => [BN] => ReLU) * 2"""
@@ -61,9 +58,6 @@ class Up(nn.Module):
 
         x1 = F.pad(x1, [diffX // 2, diffX - diffX // 2,
                         diffY // 2, diffY - diffY // 2])
-        # if you have padding issues, see
-        # https://github.com/HaiyongJiang/U-Net-Pytorch-Unstructured-Buggy/commit/0e854509c2cea854e247a9c615f175f76fbb2e3a
-        # https://github.com/xiaopeng-liao/Pytorch-UNet/commit/8ebac70e633bac59fc22bb5195e513d5832fb3bd
         x = torch.cat([x2, x1], dim=1)
         return self.conv(x)
 
@@ -111,30 +105,5 @@ class UNet(nn.Module):
         return logits
     
 
-
-    # def summary(self, input_size=(1, 512, 512), batch_size=-1, device='cuda'):
-    #     """ Get the summary of the network in a chart like form
-    #     with name of layer size of the inputs and parameters 
-    #     and some extra memory details.
-    #     This method uses the torchsummary package.
-    #     For more information check the link.
-    #     Link :- https://github.com/sksq96/pytorch-summary
-
-    #     Parameters:
-    #         input_size(tuple): Size of the input for the network in
-    #                              format (Channel, Width, Height).
-    #                              Default: (1,512,512)
-    #         batch_size(int): Batch size for the network.
-    #                             Default: -1
-    #         device(str): Device on which the network is loaded.
-    #                         Device can be 'cuda' or 'cpu'.
-    #                         Default: 'cuda'
-
-    #     Returns:
-    #         A printed output for IPython Notebooks.
-    #         Table with 3 columns for Layer Name, Input Size and Parameters.
-    #         torchsummary.summary() method is used.
-    #     """
-    #     return summary(self, input_size, batch_size, device)
 
 
