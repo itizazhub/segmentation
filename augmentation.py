@@ -13,8 +13,8 @@ from albumentations import (
 )
 
 #get all images and masks
-images = [i for i in config.images_path.glob("*.png")]
-masks  = [i for i in config.masks_path.glob("*.png")]
+images = [i for i in config.augmented_images_path.glob("*.png")]
+masks  = [i for i in config.augmented_masks_path.glob("*.png")]
 
 #split images and masks into train(90%) and test(10%)
 train_images, test_images, train_masks, test_masks = train_test_split(images, masks, test_size=0.1, random_state=config.random_state)

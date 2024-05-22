@@ -17,7 +17,7 @@ def plot_loss():
     plt.figure(figsize=(18, 6))  # Adjust figsize as needed
 
     # Plot training loss
-    plt.subplot(1, 3, 1)
+    plt.subplot(1, 2, 1)
     plt.plot(epochs, df['training_loss'], 'b', label='Training loss')
     plt.title('Training Loss')
     plt.xlabel('Epochs')
@@ -25,20 +25,20 @@ def plot_loss():
     plt.legend()
 
     # Plot Validation Dice Score
-    plt.subplot(1, 3, 2)
+    plt.subplot(1, 2, 2)
     plt.plot(epochs, df['validation_dice_score'], 'r', label='Validation Dice Score')
     plt.title('Validation Dice Score')
     plt.xlabel('Epochs')
     plt.ylabel('Dice Score')
     plt.legend()
 
-    # Plot Learning Rate
-    plt.subplot(1, 3, 3)
-    plt.plot(epochs, df['learning_rate'], 'g', label='Learning Rate')
-    plt.title('Learning Rate')
-    plt.xlabel('Epochs')
-    plt.ylabel('Learning Rate')
-    plt.legend()
+    # # Plot Learning Rate
+    # plt.subplot(1, 3, 3)
+    # plt.plot(epochs, df['learning_rate'], 'g', label='Learning Rate')
+    # plt.title('Learning Rate')
+    # plt.xlabel('Epochs')
+    # plt.ylabel('Learning Rate')
+    # plt.legend()
 
     # Save the plot
     plt.tight_layout()
