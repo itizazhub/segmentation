@@ -58,6 +58,6 @@ if __name__ == '__main__':
     for zipped_file_path in tqdm(file_names):
         unzip(zipped_file_path, config.mat_files_path)
 
-    makedir(config.images_path)
-    makedir(config.masks_path)
-    convert_matfiles_to_images(config.mat_files_path, config.images_path, config.masks_path)
+    makedir(config.augmented_images_path)
+    makedir(config.augmented_masks_path)
+    convert_matfiles_to_images(config.mat_files_path, config.augmented_images_path, config.augmented_masks_path)

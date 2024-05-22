@@ -2,13 +2,13 @@ from pathlib import Path
 
 class Config:
     def __init__(self) -> None:
-        self.zipped_dataset_path = Path("../5")
+        self.zipped_dataset_path = Path("/content/drive/MyDrive/segmentation_project/5")
         self.unzipped_dataset = Path("unzipped_dataset")
         self.mat_files_path = Path("mat_files")
-        self.images_path = Path('images')
-        self.masks_path = Path('masks')
-        self.augmented_images_path = Path('augmented_images')
-        self.augmented_masks_path = Path('augmented_masks')
+        self.images_path = Path('augmented_images')
+        self.masks_path = Path('augmented_masks')
+        self.augmented_images_path = Path('images')
+        self.augmented_masks_path = Path('masks')
         self.model_weights_path = Path('/content/drive/MyDrive/segmentation_project/model_weights')
         self.training_weights_path = Path('/content/drive/MyDrive/segmentation_project/all_weights')
         self.result_folder_path = Path('/content/drive/MyDrive/segmentation_project/results')
@@ -16,11 +16,11 @@ class Config:
         self.combined_image_mask = Path('combined_image_mask')
         self.log_file_path = Path('/content/drive/MyDrive/segmentation_project/training.log')
 
-        self.train_ratio = 0.98
-        self.test_ratio = 0.02
+        self.train_ratio = 0.90
+        self.test_ratio = 0.10
         self.random_state = 42
         self.image_size = 512
-        self.transform = True
+        self.transform = False
         self.DEBUG = False
         self.batch_size = 2
 
