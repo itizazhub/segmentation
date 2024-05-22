@@ -7,6 +7,8 @@ class Config:
         self.mat_files_path = Path("mat_files")
         self.images_path = Path('images')
         self.masks_path = Path('masks')
+        self.augmented_images_path = Path('augmented_images')
+        self.augmented_masks_path = Path('augmented_masks')
         self.model_weights_path = Path('/content/drive/MyDrive/segmentation_project/model_weights')
         self.training_weights_path = Path('/content/drive/MyDrive/segmentation_project/all_weights')
         self.result_folder_path = Path('/content/drive/MyDrive/segmentation_project/results')

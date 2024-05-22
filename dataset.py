@@ -75,9 +75,9 @@ class DatasetCreator:
         self.y = [i for i in config.masks_path.glob("*.png")]
         
     def split_data(self) -> tuple:
-        # Split dataset into train, test, and validation sets
-        train_x, test_x, train_y, test_y = train_test_split(self.x, self.y, test_size=config.test_ratio, random_state=config.random_state)
+        # Split dataset into train and validation sets
+        train_x, val_x, train_y, val_y = train_test_split(self.x, self.y, test_size=config.test_ratio, random_state=config.random_state)
         # val_x, test_x, val_y, test_y = train_test_split(test_val_x, test_val_y, test_size=config.test_ratio/(config.test_ratio+config.val_ratio), random_state=config.random_state)
         
-        return (train_x, train_y), (test_x, test_y)
+        return (train_x, train_y), (val_x, val_y)
     

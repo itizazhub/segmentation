@@ -39,14 +39,14 @@ class Trainer:
         self.training_loss = []
         self.validation_dice_score = []
         self.learning_rate = []
-        self.train_set, self.test_set = DatasetCreator().split_data()
+        self.train_set, self.val_set = DatasetCreator().split_data()
         self.train_dataset = TumorDataset(self.train_set)
-        self.test_dataset = TumorDataset(self.test_set)
+        self.val_dataset = TumorDataset(self.val_set)
         self.train_loader = DataLoader(self.train_dataset, batch_size=config.batch_size, shuffle=True)
-        self.test_loader = DataLoader(self.test_dataset, batch_size=1, shuffle=False)
+        self.val_loader = DataLoader(self.val_dataset, batch_size=1, shuffle=False)
         print("Device: ", self.device)
         print("Training data: ", self.train_dataset.__len__())
-        print("Test data: ", self.test_dataset.__len__())
+        print("val data: ", self.val_dataset.__len__())
         print("----Training started----")
 
 
@@ -76,7 +76,7 @@ class Trainer:
             dice = 0
             self.model.eval()
             with torch.no_grad():
-                for img, label in iter(self.test_loader):
+                for img, label in iter(self.val_loader):
                     img, label = torch.tensor(img), torch.tensor(label)
                     img = img.to(self.device)
                     label = label.to(self.device)
@@ -85,7 +85,7 @@ class Trainer:
                     dice += (1.0 - self.dice_loss_fn(pred.float(), label.float()))
 
             self.model.train()
-            dice = dice / max(self.test_dataset.__len__(), 1)
+            dice = dice / max(self.val_dataset.__len__(), 1)
             self.validation_dice_score.append(dice.cpu().numpy())
 
             logging.info(f'Epoch: {epoch}, Training Loss: {self.training_loss[-1]}, Validation dice score: {self.validation_dice_score[-1]}, learning_rate: {self.learning_rate[-1]}')
