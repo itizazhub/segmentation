@@ -47,44 +47,32 @@ def plot_loss():
     # Show the plot
     plt.show()
 
-def plot_inference_result(image, mask, output, title, transparency=0.38):
+def plot_inference_result(image, mask, output, title, idx, transparency=0.38):
 
-    fig, axs = plt.subplots(2, 3, sharex=True, sharey=True, figsize=(
+    fig, axs = plt.subplots(1, 3, sharex=True, sharey=True, figsize=(
         20, 15), gridspec_kw={'wspace': 0.025, 'hspace': 0.010})
     fig.suptitle(title, x=0.5, y=0.92, fontsize=20)
   
-    axs[0][0].set_title("Original Mask", fontdict={'fontsize': 16})
-    axs[0][0].imshow(mask, cmap='gray')
-    axs[0][0].set_axis_off()
+    axs[0].set_title("Original Mask", fontdict={'fontsize': 16})
+    axs[0].imshow(mask, cmap='gray')
+    axs[0].set_axis_off()
 
-    axs[0][1].set_title("Constructed Mask", fontdict={'fontsize': 16})
-    axs[0][1].imshow(output, cmap='gray')
-    axs[0][1].set_axis_off()
+    axs[1].set_title("Constructed Mask", fontdict={'fontsize': 16})
+    axs[1].imshow(output, cmap='gray')
+    axs[1].set_axis_off()
 
-    mask_diff = np.abs(np.subtract(mask, output))
-    axs[0][2].set_title("Mask Difference", fontdict={'fontsize': 16})
-    axs[0][2].imshow(mask_diff, cmap='gray')
-    axs[0][2].set_axis_off()
-
-    seg_output = mask*transparency
-    seg_image = np.add(image, seg_output)/2
-    axs[1][0].set_title("Original Segment", fontdict={'fontsize': 16})
-    axs[1][0].imshow(seg_image, cmap='gray')
-    axs[1][0].set_axis_off()
-
-    seg_output = output*transparency
-    seg_image = np.add(image, seg_output)/2
-    axs[1][1].set_title("Constructed Segment", fontdict={'fontsize': 16})
-    axs[1][1].imshow(seg_image, cmap='gray')
-    axs[1][1].set_axis_off()
-
-    axs[1][2].set_title("Original Image", fontdict={'fontsize': 16})
-    axs[1][2].imshow(image, cmap='gray')
-    axs[1][2].set_axis_off()
+    mask_diff = np.abs(np.subtract(output, mask))
+    axs[2].set_title("Mask Difference", fontdict={'fontsize': 16})
+    axs[2].imshow(mask_diff, cmap='gray')
+    axs[2].set_axis_off()
 
     plt.tight_layout()
-    plt.savefig(config.result_folder_path.joinpath('inference_images.png'), dpi=90, bbox_inches='tight')
+    output_dir = Path('/content/segmentation/output')
+    output_dir.mkdir(parents=True, exist_ok=True)  # Ensure output directory exists
+    plt.savefig(output_dir.joinpath('inference_images'+str(idx)+'.png'), dpi=90, bbox_inches='tight')
     plt.show()
+
+
 
 
 

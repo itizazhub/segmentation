@@ -30,7 +30,7 @@ class Config:
         self.learning_rate = 1e-5
         self.momentum = 0.999
         self.weight_decay = 1e-8
-        self.epochs = 93 #100
+        self.epochs = 94 #100
 
         self.load_weights = False
         self.best_weights = 'best_91.pth' #'best_128.pth'
